@@ -30,13 +30,20 @@ public override void setup()
 }
 ```
 possible methods to override:
+
 preload();
+
 setup();
+
 draw();
+
 keyPressed();
+
 mouseDragged();
 
+
 * Step 4: add the init method to the constructor of your form:
+
 the method wants to know the form and a new instance of the class we have created.
 
 example:
