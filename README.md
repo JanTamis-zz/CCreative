@@ -1,2 +1,2 @@
 # CCreative
-A P5.js and Processing clone made for C#.
+A C# library based on Processing and P5.js.
