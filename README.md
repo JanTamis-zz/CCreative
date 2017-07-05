@@ -4,7 +4,7 @@ A C# library based on Processing and P5.js.
 !!!THIS IS A BETA OF THIS LIBRARY!!!
 
 How to use 
-step 1: include the files, the CCreative.General is necessary
+* step 1: include the files, the CCreative.General is necessary
 
 using static CCreative.Colors;
 using static CCreative.Math;
@@ -13,22 +13,22 @@ using static CCreative.General;
 using static CCreative.Data;
 using CCreative;
 
-step 2: create a class where the code will be entered, inherit the class with the Function class:
+* step 2: create a class where the code will be entered, inherit the class with the Function class:
 Example:
-
+```cs
 public class yourClassName : Function 
 {
     
 }
-
-Step 3 override the functions you want to use:
+```
+* Step 3 override the functions you want to use:
 example:
-
+```cs
 public override void setup()
 {
     createCanvas(500, 500);
 }
-
+```
 possible methods to override:
 preload();
 setup();
@@ -36,18 +36,19 @@ draw();
 keyPressed();
 mouseDragged();
 
-Step 4: add the init method to the constructor of your form:
+* Step 4: add the init method to the constructor of your form:
 the method wants to know the form and a new instance of the class we have created.
 
 example:
+```cs
 public Form1()
 {
     InitializeComponent();
     init(this, new yourClassName());
 }
-      
+```      
 example Code:
-
+```cs
 using System.Windows.Forms;
 
 using static CCreative.Colors;
@@ -103,3 +104,4 @@ namespace WindowsFormsApp1
         }
     }
 }        
+```
