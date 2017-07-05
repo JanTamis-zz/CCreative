@@ -3,6 +3,8 @@ A C# library based on Processing and P5.js.
 
 !!!THIS IS A BETA OF THIS LIBRARY!!!
 
+[more information](https://p5js.org/reference/)
+
 How to use 
 * step 1: include the files, the CCreative.General is necessary
 ```cs
