@@ -5,14 +5,14 @@ A C# library based on Processing and P5.js.
 
 How to use 
 * step 1: include the files, the CCreative.General is necessary
-
+```cs
 using static CCreative.Colors;
 using static CCreative.Math;
 using static CCreative.Drawing;
 using static CCreative.General;
 using static CCreative.Data;
 using CCreative;
-
+```
 * step 2: create a class where the code will be entered, inherit the class with the Function class:
 Example:
 ```cs
