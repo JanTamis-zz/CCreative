@@ -28,7 +28,7 @@ example:
 ```cs
 public override void setup()
 {
-    createCanvas(500, 500);
+    size(500, 500);
 }
 ```
 possible methods to override:
@@ -42,6 +42,8 @@ draw();
 keyPressed();
 
 mouseDragged();
+
+mouseWheel();
 
 
 * Step 4: add the init method to the constructor of your form:
