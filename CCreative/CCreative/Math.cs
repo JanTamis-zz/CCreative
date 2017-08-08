@@ -12,6 +12,7 @@ namespace CCreative
     public static class Math
     {
         static Random rand = new Random();
+        public static double seed;
 
         public static readonly float HALF_PI = (float)(System.Math.PI * 0.5);
         public static readonly float PI = (float)System.Math.PI;
@@ -19,6 +20,10 @@ namespace CCreative
         public static readonly float TAU = (float)(System.Math.PI * 2);
         public static readonly float TWO_PI = (float)(System.Math.PI * 2);
         public static readonly float Infinity = float.PositiveInfinity;
+
+        static int noisedetail = 1;
+        static double persistence = 1;
+        static Perlin perlin = new Perlin();
 
         #region Calculations
         public static float abs(double number)
@@ -38,7 +43,7 @@ namespace CCreative
             return (float)number;
         }
 
-        public static float dist(System.Drawing.Point beginPoint, System.Drawing.Point endPoint)
+        public static float dist(System.Drawing.PointF beginPoint, System.Drawing.PointF endPoint)
         {
             return (float)(System.Math.Sqrt(System.Math.Pow(endPoint.X - beginPoint.X, 2) + System.Math.Pow(endPoint.Y - beginPoint.Y, 2)));
         }
@@ -138,28 +143,64 @@ namespace CCreative
 
         #region Noise
 
-        public static double noise(double x, double y = 0, double z = 0)
+        public static float noise(double x)
         {
-            return Perlin.perlin(x, y, z);
+            return noise(x + seed,seed, seed);
+        }
+
+        public static float noise(double x, double y)
+        {
+            return noise(x + seed, y + seed, seed);
+        }
+
+        public static float noise(double x, double y, double z)
+        {
+            return constrain(perlin.OctavePerlin(x + seed, y + seed, z + seed, noisedetail, persistence), 0, 1);
+        }
+
+        public static void noiseSeed(double Seed)
+        {
+            seed = Seed;
+        }
+
+        public static void noiseDetail(int Detail)
+        {
+            noisedetail = Detail;
+        }
+
+        public static void noiseDetail(int Detail, double Persistence)
+        {
+            noisedetail = Detail;
+            persistence = Persistence;
         }
 
         public class Perlin
         {
 
-            public static double OctavePerlin(double x, double y, double z, int octaves, double persistence)
+            public int repeat;
+
+            public Perlin(int repeat = -1)
+            {
+                this.repeat = repeat;
+            }
+
+            public double OctavePerlin(double x, double y, double z, int octaves, double persistence)
             {
                 double total = 0;
                 double frequency = 1;
                 double amplitude = 1;
+                double maxValue = 0;            // Used for normalizing result to 0.0 - 1.0
                 for (int i = 0; i < octaves; i++)
                 {
                     total += perlin(x * frequency, y * frequency, z * frequency) * amplitude;
+
+                    maxValue += amplitude;
 
                     amplitude *= persistence;
                     frequency *= 2;
                 }
 
-                return total;
+                return total / maxValue;
             }
 
             private static readonly int[] permutation = { 151,160,137,91,90,15,					// Hash lookup table as defined by Ken Perlin.  This is a randomly
@@ -188,60 +229,77 @@ namespace CCreative
                 }
             }
 
-            public static double perlin(double x, double y, double z)
+            public double perlin(double x, double y, double z)
             {
+                if (repeat > 0)
+                {                                   // If we have any repeat on, change the coordinates to their "local" repetitions
+                    x = x % repeat;
+                    y = y % repeat;
+                    z = z % repeat;
+                }
+
                 int xi = (int)x & 255;                              // Calculate the "unit cube" that the point asked will be located in
                 int yi = (int)y & 255;                              // The left bound is ( |_x_|,|_y_|,|_z_| ) and the right bound is that
                 int zi = (int)z & 255;                              // plus 1.  Next we calculate the location (from 0.0 to 1.0) in that cube.
                 double xf = x - (int)x;                             // We also fade the location to smooth the result.
                 double yf = y - (int)y;
-                double zf = z - (int)z;
+        
+        double zf = z - (int)z;
                 double u = fade(xf);
                 double v = fade(yf);
                 double w = fade(zf);
 
-                int a = p[xi] + yi;                             // This here is Perlin's hash function.  We take our x value (remember,
-                int aa = p[a] + zi;                             // between 0 and 255) and get a random value (from our p[] array above) between
-                int ab = p[a + 1] + zi;                             // 0 and 255.  We then add y to it and plug that into p[], and add z to that.
-                int b = p[xi + 1] + yi;                             // Then, we get another random value by adding 1 to that and putting it into p[]
-                int ba = p[b] + zi;                             // and add z to it.  We do the whole thing over again starting with x+1.  Later
-                int bb = p[b + 1] + zi;                             // we plug aa, ab, ba, and bb back into p[] along with their +1's to get another set.
-                                                                    // in the end we have 8 values between 0 and 255 - one for each vertex on the unit cube.
-                                                                    // These are all interpolated together using u, v, and w below.
+                int aaa, aba, aab, abb, baa, bba, bab, bbb;
+                aaa = p[p[p[xi] + yi] + zi];
+                aba = p[p[p[xi] + inc(yi)] + zi];
+                aab = p[p[p[xi] + yi] + inc(zi)];
+                abb = p[p[p[xi] + inc(yi)] + inc(zi)];
+                baa = p[p[p[inc(xi)] + yi] + zi];
+                bba = p[p[p[inc(xi)] + inc(yi)] + zi];
+                bab = p[p[p[inc(xi)] + yi] + inc(zi)];
+                bbb = p[p[p[inc(xi)] + inc(yi)] + inc(zi)];
 
                 double x1, x2, y1, y2;
-                x1 = lerp(grad(p[aa], xf, yf, zf),          // This is where the "magic" happens.  We calculate a new set of p[] values and use that to get
-                            grad(p[ba], xf - 1, yf, zf),            // our final gradient values.  Then, we interpolate between those gradients with the u value to get
-                            u);                                     // 4 x-values.  Next, we interpolate between the 4 x-values with v to get 2 y-values.  Finally,
-                x2 = lerp(grad(p[ab], xf, yf - 1, zf),          // we interpolate between the y-values to get a z-value.
-                            grad(p[bb], xf - 1, yf - 1, zf),
-                            u);                                     // When calculating the p[] values, remember that above, p[a+1] expands to p[xi]+yi+1 -- so you are
-                y1 = lerp(x1, x2, v);                               // essentially adding 1 to yi.  Likewise, p[ab+1] expands to p[p[xi]+yi+1]+zi+1] -- so you are adding
-                                                                    // to zi.  The other 3 parameters are your possible return values (see grad()), which are actually
-                x1 = lerp(grad(p[aa + 1], xf, yf, zf - 1),      // the vectors from the edges of the unit cube to the point in the unit cube itself.
-                            grad(p[ba + 1], xf - 1, yf, zf - 1),
+                x1 = lerp(grad(aaa, xf, yf, zf),                // The gradient function calculates the dot product between a pseudorandom
+                            grad(baa, xf - 1, yf, zf),              // gradient vector and the vector from the input coordinate to the 8
+                            u);                                     // surrounding points in its unit cube.
+                x2 = lerp(grad(aba, xf, yf - 1, zf),                // This is all then lerped together as a sort of weighted average based on the faded (u,v,w)
+                            grad(bba, xf - 1, yf - 1, zf),              // values we made earlier.
+                              u);
+                y1 = lerp(x1, x2, v);
+
+                x1 = lerp(grad(aab, xf, yf, zf - 1),
+                            grad(bab, xf - 1, yf, zf - 1),
                             u);
-                x2 = lerp(grad(p[ab + 1], xf, yf - 1, zf - 1),
-                              grad(p[bb + 1], xf - 1, yf - 1, zf - 1),
+                x2 = lerp(grad(abb, xf, yf - 1, zf - 1),
+                              grad(bbb, xf - 1, yf - 1, zf - 1),
                               u);
                 y2 = lerp(x1, x2, v);
 
                 return (lerp(y1, y2, w) + 1) / 2;                       // For convenience we bound it to 0 - 1 (theoretical min/max before is -1 - 1)
             }
 
+            public int inc(int num)
+            {
+                num++;
+                if (repeat > 0) num %= repeat;
+
+                return num;
+            }
+
             public static double grad(int hash, double x, double y, double z)
             {
                 int h = hash & 15;                                  // Take the hashed value and take the first 4 bits of it (15 == 0b1111)
-                double u = h < 8 /* 0b1000 */ ? x : y;              // If the most signifigant bit (MSB) of the hash is 0 then set u = x.  Otherwise y.
+                double u = h < 8 /* 0b1000 */ ? x : y;              // If the most significant bit (MSB) of the hash is 0 then set u = x.  Otherwise y.
 
                 double v;                                           // In Ken Perlin's original implementation this was another conditional operator (?:).  I
                                                                     // expanded it for readability.
 
-                if (h < 4 /* 0b0100 */)                             // If the first and second signifigant bits are 0 set v = y
+                if (h < 4 /* 0b0100 */)                             // If the first and second significant bits are 0 set v = y
                     v = y;
-                else if (h == 12 /* 0b1100 */ || h == 14 /* 0b1110*/)// If the first and second signifigant bits are 1 set v = x
+                else if (h == 12 /* 0b1100 */ || h == 14 /* 0b1110*/)// If the first and second significant bits are 1 set v = x
                     v = x;
-                else                                                // If the first and second signifigant bits are not equal (0/1, 1/0) set v = z
+                else                                                // If the first and second significant bits are not equal (0/1, 1/0) set v = z
                     v = z;
 
                 return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v); // Use the last 2 bits to decide if u and v are positive or negative.  Then return their addition.
@@ -314,17 +372,14 @@ namespace CCreative
 
         #region Algorithms
 
-        public static PointF PolarToCartesian(System.Drawing.Point StartPosition, double angle, double radius)
+        public static PointF PolarToCartesian(System.Drawing.PointF StartPosition, double angle, double radius)
         {
             float x, y;
-
-            angle -= 90;
-
             x = StartPosition.X;
             y = StartPosition.Y;
 
-            x += (float)(radius * System.Math.Cos(angle * 2 * System.Math.PI / 360));
-            y += (float)(radius * System.Math.Sin(angle * 2 * System.Math.PI / 360));
+            x += (float)(radius * System.Math.Cos(angle * 2 * PI / 360));
+            y += (float)(radius * System.Math.Sin(angle * 2 * PI / 360));
 
             return new System.Drawing.PointF(x, y);
         }
@@ -335,7 +390,7 @@ namespace CCreative
             public float Radius;
         }
 
-        public static Result CartesianToPolar(System.Drawing.Point Start, System.Drawing.Point location)
+        public static Result CartesianToPolar(System.Drawing.PointF Start, System.Drawing.PointF location)
         {
 
             double dX = Start.X - location.X;
@@ -412,12 +467,19 @@ namespace CCreative
         public static System.Drawing.PointF randomPoint()
         {
             Random rand = new Random();
-            return new System.Drawing.PointF(map((float)rand.NextDouble(), 0, 1, 0, width), map((float)rand.NextDouble(), 0, 1, 0, height));
+            return new System.Drawing.PointF(random(width), random(height));
+        }
+
+        public static string randomString(int length)
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            return new string(Enumerable.Repeat(chars, length)
+              .Select(s => s[floor(random(s.Length))]).ToArray());
         }
 
         public static Vector randomVector()
         {
-            Vector vec = new Vector(random(-100, 100), random(-100, 100));
+            Vector vec = new Vector(random(-float.MinValue, float.MaxValue), random(-float.MinValue, float.MaxValue));
             vec.Normalize();
             return vec;
         }
@@ -470,6 +532,77 @@ namespace CCreative
         public static float random()
         {
             return random(0, 1);
+        }
+
+        /// <summary>
+        ///   Generates normally distributed numbers. Each operation makes two Gaussians for the price of one, and apparently they can be cached or something for better performance, but who cares.
+        /// </summary>
+        /// <param name="r"></param>
+        /// <param name = "mu">Mean of the distribution</param>
+        /// <param name = "sigma">Standard deviation</param>
+        /// <returns></returns>
+        public static float nextGaussian(double mu, double sigma)
+        {
+            var u1 = random();
+            var u2 = random();
+
+            var rand_std_normal = sqrt(-2.0 * log(u1)) *
+                                sin(2.0 * PI * u2);
+
+            var rand_normal = mu + sigma * rand_std_normal;
+
+            return (float)rand_normal;
+        }
+
+        /// <summary>
+        ///   Generates normally distributed numbers. Each operation makes two Gaussians for the price of one, and apparently they can be cached or something for better performance, but who cares.
+        /// </summary>
+        /// <param name="r"></param>
+        /// <param name = "mu">Mean of the distribution</param>
+        /// <param name = "sigma">Standard deviation</param>
+        /// <returns></returns>
+        public static float nextGaussian()
+        {
+            return nextGaussian(0, 1);
+        }
+
+        /// <summary>
+        ///   Equally likely to return true or false.
+        /// </summary>
+        /// <returns></returns>
+        public static bool nextBoolean()
+        {
+            return floor(random(2)) > 0;
+        }
+
+        /// <summary>
+        ///   Generates values from a triangular distribution.
+        /// </summary>
+        /// <remarks>
+        /// See http://en.wikipedia.org/wiki/Triangular_distribution for a description of the triangular probability distribution and the algorithm for generating one.
+        /// </remarks>
+        /// <param name="r"></param>
+        /// <param name = "a">Minimum</param>
+        /// <param name = "b">Maximum</param>
+        /// <param name = "c">Mode (most frequent value)</param>
+        /// <returns></returns>
+        public static float nextTriangular(double a, double b, double c)
+        {
+            var u = random();
+
+            return (float)(u < (c - a) / (b - a)
+                       ? a + sqrt(u * (b - a) * (c - a))
+                       : b - sqrt((1 - u) * (b - a) * (b - c)));
+        }
+
+        public static int sign(double number)
+        {
+            if (number > 0)
+                return 1;
+            else if (number < 0)
+                return -1;
+
+            return 0;
         }
 
         public static float fibonacci(double n)

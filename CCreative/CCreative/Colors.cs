@@ -17,7 +17,8 @@ namespace CCreative
     public static class Colors
     {
         [DllImport("shlwapi.dll")]
-        public static extern int ColorHLSToRGB(int H, int L, int S);
+        static extern int ColorHLSToRGB(int H, int L, int S);
+        static colorModes colormode = colorModes.RGB;
         ///<summary>
         ///Returns the alpha component of a Color.
         ///</summary>
@@ -77,24 +78,38 @@ namespace CCreative
         ///<summary>
         ///Returns a random Color between a range.
         ///</summary>
-        public static Color randomColor(int min = 0, int max = 255)
+        public static Color randomColor(byte min, byte max, byte transparancy)
         {
-            max++;
-
-            min = (int)constrain(min, 0, 256);
-            max = (int)constrain(max, 0, 255);
-
-            if (max < min)
-                max = min + 1;
-            if (max > 256)
-                max = 0;
-            else if (max > 256)
-                max = 256;
-
-            Random rand = new Random();
-            return Color.FromArgb(255, rand.Next(min, max), rand.Next(min, max), rand.Next(min, max));
+            return Color.FromArgb(transparancy, floor(random(min, max)), floor(random(min, max)), floor(random(min, max)));
         }
 
+        ///<summary>
+        ///Returns a random color beween the given values.
+        ///</summary>
+        public static Color randomColor(byte min, byte max)
+        {
+            return randomColor(min, max, 255);
+        }
+
+        ///<summary>
+        ///Returns a random color.
+        ///</summary>
+        public static Color randomColor()
+        {
+            return randomColor(0, 255, 255);
+        }
+        
+        ///<summary>
+        ///Returns a random color with the given transparancy.
+        ///</summary>
+        public static Color randomColor(byte transparancy)
+        {
+            return randomColor(0, 255, transparancy);
+        }
+
+        ///<summary>
+        ///Returns a color from the given hue, lightness and saturation 
+        ///</summary>
         public static Color ColorFromHSV(double h, double l, double s)
         {
             h = h % 360;
@@ -136,7 +151,7 @@ namespace CCreative
         }
 
         ///<summary>
-        ///The possible Color modes
+        ///The possible Color modes.
         ///</summary>
         public enum colorModes
         {
@@ -145,34 +160,40 @@ namespace CCreative
         }
 
         ///<summary>
-        ///Sets the Color mode
+        ///Sets the Color mode.
         ///</summary>
         public static void colorMode(colorModes modes)
         {
-            Drawing.colormode = modes;
+            colormode = modes;
         }
 
+        ///<summary>
+        ///Returns the current colormode.
+        ///</summary>
+        public static colorModes colorMode()
+        {
+            return colormode;
+        }
+
+        ///<summary>
+        ///Inverts the given color.
+        ///</summary>
         public static Color invertColor(Color color)
         {
             return Color.FromArgb(color.ToArgb() ^ 0xffffff);
         }
 
+        ///<summary>
+        ///Inverts a color from a interger value.
+        ///</summary>
         public static Color invertColor(int value)
         {
-            Color clr = Color.Transparent;
-            if (colormode == colorModes.RGB)
-            {
-                value = (int)constrain(value, 0, 255);
-                clr = Color.FromArgb(255 - value, 255 - value, 255 - value);
-            }
-            else if (colormode == colorModes.HSB)
-            {
-                clr = ColorTranslator.FromWin32(ColorHLSToRGB(value, 120, 240));
-                clr = invertColor(clr);
-            }
-            return clr;
+            return invertColor(color(value));
         }
 
+        ///<summary>
+        ///Returns a color beween two colors with the given offset.
+        ///</summary>
         public static Color lerpColor(Color color1, Color color2, double atm)
         {
             double R, G, B;
@@ -181,6 +202,106 @@ namespace CCreative
             B = lerp(color1.B, color2.B, atm);
 
             return Color.FromArgb((int)R, (int)G, (int)B);
+        }
+
+        private static Color hueToColor(int hue)
+        {
+            hue = (int)map(hue, 0, 360, 0, 240);
+            return ColorTranslator.FromWin32(ColorHLSToRGB(hue, 120, 240));
+        }
+
+        ///<summary>
+        ///Returns a color from the given value, this depents on the colormode
+        ///<para>RGB: a grayscale color.</para>
+        ///<para>HSB: the value will be used for the Hue</para> 
+        ///</summary>
+        public static Color color(int value)
+        {
+            Color clr = Color.Transparent;
+            if (colorMode() == colorModes.HSB)
+            {
+                value = (int)constrain(value, 0, 360);
+                clr = ColorTranslator.FromWin32(ColorHLSToRGB((int)map(value, 0, 360, 0, 240), 120, 240));
+            }
+            else if (colorMode() == colorModes.RGB)
+            {
+                value = (int)constrain(value, 0, 255);
+                clr = Color.FromArgb(255, value, value, value);
+            }
+
+            return clr;
+        }
+
+        ///<summary>
+        ///Returns a color from the given value plus the  given transparancy, this depents on the colormode
+        ///<para>RGB: a grayscale color.</para>
+        ///<para>HSB: the value will be used for the Hue</para> 
+        ///</summary>
+        public static Color color(int value, int transparancy)
+        {
+            Color clr = Color.Transparent;
+
+            if (colorMode() == colorModes.HSB)
+            {
+                value = (int)constrain(value, 0, 255);
+                clr = hueToColor(value);
+            }
+            else if (colorMode() == colorModes.RGB)
+            {
+                value = value % 255;
+                clr = Color.FromArgb(value, value, value);
+            }
+            clr = Color.FromArgb(transparancy, clr);
+            return clr;
+        }
+
+        ///<summary>
+        ///Returns a color from the given values, this depents on the colormode
+        ///<para>RGB: a color from the given Red, Green and Blue values.</para>
+        ///<para>HSB: a color from the given Hue, Saturation and brightness.</para> 
+        ///</summary>
+        public static Color color(double value1, double value2, double value3)
+        {
+            Color clr = Color.Transparent;
+
+            if (colorMode() == colorModes.HSB)
+            {
+                clr = ColorFromHSV(value1, value2, value3);
+            }
+            else if (colorMode() == colorModes.RGB)
+            {
+                value1 = value1 % 255;
+                value2 = value2 % 255;
+                value3 = value3 % 255;
+                clr = Color.FromArgb((int)value1, (int)value2, (int)value3);
+            }
+            return clr;
+        }
+
+        ///<summary>
+        ///Returns a color from the given values and a given transparancy, this depents on the colormode.
+        ///<para>RGB: a color from the given Red, Green and Blue values.</para>
+        ///<para>HSB: a color from the given Hue, Saturation and brightness.</para> 
+        ///</summary>
+        public static Color color(int value1, int value2, int value3, int transparancy)
+        {
+            return Color.FromArgb(transparancy, color(value1, value2, value3));
+        }
+
+        ///<summary>
+        ///Returns a color from a hexdecimal number.
+        ///</summary>
+        public static Color color(string hexValue)
+        {
+            return ColorTranslator.FromHtml(hexValue);
+        }
+
+        ///<summary>
+        ///Returns a color from a hexdecimal number, and the given transparancy.
+        ///</summary>
+        public static Color color(string hexValue, byte transparancy)
+        {
+            return Color.FromArgb(transparancy, ColorTranslator.FromHtml(hexValue));
         }
     }
 }

@@ -1,0 +1,7 @@
+D:\Users\Jan Tamis\Documents\Visual Studio 2017\Projects\CCreative\CCreative\bin\Release\Ccreative.dll.config
+D:\Users\Jan Tamis\Documents\Visual Studio 2017\Projects\CCreative\CCreative\bin\Release\Ccreative.dll
+D:\Users\Jan Tamis\Documents\Visual Studio 2017\Projects\CCreative\CCreative\bin\Release\Ccreative.pdb
+D:\Users\Jan Tamis\Documents\Visual Studio 2017\Projects\CCreative\CCreative\obj\Release\CCreative.Properties.Resources.resources
+D:\Users\Jan Tamis\Documents\Visual Studio 2017\Projects\CCreative\CCreative\obj\Release\CCreative.csproj.GenerateResource.Cache
+D:\Users\Jan Tamis\Documents\Visual Studio 2017\Projects\CCreative\CCreative\obj\Release\Ccreative.dll
+D:\Users\Jan Tamis\Documents\Visual Studio 2017\Projects\CCreative\CCreative\obj\Release\Ccreative.pdb

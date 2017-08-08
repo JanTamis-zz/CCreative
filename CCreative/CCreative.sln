@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.14
+VisualStudioVersion = 15.0.26430.15
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CCreative", "P5.net\CCreative.csproj", "{6A85C615-8B5F-4D74-98F2-65F452BC95AE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CCreative", "CCreative.csproj", "{6A85C615-8B5F-4D74-98F2-65F452BC95AE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

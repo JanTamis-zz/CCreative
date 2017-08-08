@@ -4,6 +4,8 @@ using static CCreative.Math;
 using static CCreative.Drawing;
 using System.Windows.Forms;
 using System.Drawing;
+using System.Threading;
+using System.Diagnostics;
 
 namespace CCreative
 {
@@ -28,7 +30,17 @@ namespace CCreative
 
         }
 
+        public virtual void keyReleased(KeyEventArgs e)
+        {
+
+        }
+
         public virtual void mouseDragged(MouseEventArgs e)
+        {
+
+        }
+
+        public virtual void mouseWheel(MouseEventArgs e)
         {
 
         }
@@ -36,55 +48,173 @@ namespace CCreative
 
     public static class General
     {
-        public static int tempX;
-        public static int tempY;
-        public static Point tempPos;
+        static int tempX;
+        static int tempY;
+        static Point tempPos;
 
-        public static int mouseX;
-        public static int mouseY;
-        public static Point mousePos;
+        static int mousex;
+        static int mousey;
+        static Point mousepos;
 
-        public static int pMouseX;
-        public static int pMouseY;
-        public static Point PMousePos;
+        static int pmousex;
+        static int pmousey;
+        static Point pmousepos;
 
-        private static int frames = 0;
+        static int centerx;
+        static int centery;
+        static Point centerscreen;
 
-        public static bool mouseDown = false;
-        public static bool mouseUp = true;
-        private static bool fullscreen = false;
-        public static bool cursor = true;
+        static int frames = 0;
 
-        public static int width;
-        public static int height;
-        public static Size size;
+        static bool mousedown = false;
+        static bool mouseup = true;
+        static bool fullscreen = false;
+        static bool cursor = true;
 
-        public static int framecount;
-        public static float Framerate;
-        public static int setFramerate = 60;
-        private static Timer time;
-        private static Timer time2;
+        static int Width;
+        static int Height;
+
+        static int framecount;
+        static float Framerate;
+        static int setFramerate = 60;
+        static System.Windows.Forms.Timer time;
+        static System.Windows.Forms.Timer time2;
+
+        static int totalSeconds = 0;
+        static Stopwatch watch = new Stopwatch();
+
+        static RenderTypes Renderer;
+
+        public static RenderTypes renderer()
+        {
+            return Renderer;
+        }
+
+        public static int mouseX
+        {
+            get { return mousex; }
+        }
+
+        public static int mouseY
+        {
+            get { return mousey; }
+        }
+
+        public static Point mousePos
+        {
+            get { return mousepos; }
+        }
+
+        public static int pMouseX
+        {
+            get { return pmousex; }
+        }
+
+        public static int pMouseY
+        {
+            get { return pmousey; }
+        }
+
+        public static Point pMousePos
+        {
+            get { return pmousepos; }
+        }
+
+        public static int centerX
+        {
+            get { return centerx; }
+        }
+
+        public static int centerY
+        {
+            get { return centery; }
+        }
+
+        public static Point centerScreen
+        {
+            get { return centerscreen; }
+        }
+
+        public static bool mouseDown
+        {
+            get { return mousedown; }
+        }
+
+        public static bool mouseUp
+        {
+            get { return mouseup; }
+        }
+
+        public static int width
+        { 
+            get { return Width; }
+        }
+
+        public static int height
+        {
+            get { return Height; }
+        }
+
+        public static TimeSpan totalTime
+        {
+            get { return watch.Elapsed; }
+        }
+
+        public static colorModes RGB
+        {
+            get { return colorModes.RGB; }
+        }
+
+        public static colorModes HSB
+        {
+            get { return colorModes.HSB; }
+        }
+
+        public enum RenderTypes
+        {
+            GDI,
+            P2D,
+            P3D
+        }
+
+        public static RenderTypes GDI
+        {
+            get { return RenderTypes.GDI; }
+        }
+
+        public static RenderTypes P2D
+        {
+            get { return RenderTypes.P2D; }
+        }
+
+        public static RenderTypes P3D
+        {
+            get { return RenderTypes.P3D; }
+        }
 
         public static Form form;
-        private static Function mainFunctions;
-
+        static Function mainFunctions;
+        private static bool haveLoop = true;
+        
         public static void init(Form form, Function functions)
         {
             General.form = form;
 
-            width = form.Width;
-            height = form.Height;
+            Width = form.Width;
+            Height = form.Height;
 
             CCreative.Drawing.currentContext = BufferedGraphicsManager.Current;
             myBuffer = currentContext.Allocate(form.CreateGraphics(),
                 form.DisplayRectangle);
 
-            time = new Timer();
+            seed = random(double.MaxValue);
+
+            time = new System.Windows.Forms.Timer();
             time.Interval = 15;
             time.Tick += Time_Tick;
             time.Enabled = true;
 
-            time2 = new Timer();
+            time2 = new System.Windows.Forms.Timer();
             time2.Interval = 1000;
             time2.Tick += Time2_Tick;
             time2.Enabled = true;
@@ -93,23 +223,67 @@ namespace CCreative
             General.form.MouseMove += Form_MouseMove;
             General.form.Resize += Form_Resize;
             General.form.KeyDown += Form_KeyDown;
+            General.form.KeyUp += Form_KeyUp;
             General.form.MouseUp += Form_MouseUp;
             General.form.MouseDown += Form_MouseDown;
             General.form.MouseEnter += Form_MouseEnter;
             General.form.MouseLeave += Form_MouseLeave;
+            General.form.MouseWheel += Form_MouseWheel;
 
             General.form.MaximizeBox = false;
             General.form.FormBorderStyle = FormBorderStyle.FixedSingle;
 
+            General.form.Icon = Properties.Resources.icon1;
+
             var myObj = functions;
             mainFunctions = myObj as Function;
-            mainFunctions.preload();
+
+            
+
+            General.form.Text = functions.GetType().Namespace;
+
+            
+            watch.Start();
+        }
+
+        private static void UpdateTextPosition()
+        {
+            Graphics g = General.form.CreateGraphics();
+            Double startingPoint = (General.form.Width * 0.97) - (g.MeasureString(General.form.Text.Trim(), General.form.Font).Width * 0.97);
+            Double widthOfASpace = g.MeasureString(" ", General.form.Font).Width;
+            String tmp = " ";
+            Double tmpWidth = 0;
+
+            while ((tmpWidth + widthOfASpace) < startingPoint)
+            {
+                tmp += " ";
+                tmpWidth += widthOfASpace;
+            }
+
+            General.form.Text = tmp + General.form.Text.Trim();
+        }
+
+        private static void Form_KeyUp(object sender, KeyEventArgs e)
+        {
+            mainFunctions.keyReleased(e);
+        }
+
+        private static void Form_MouseWheel(object sender, MouseEventArgs e)
+        {
+            mainFunctions.mouseWheel(e);
         }
 
         private static void Time2_Tick(object sender, EventArgs e)
         {
             Framerate = frames;
             frames = 0;
+            totalSeconds++;
+
+            if (totalSeconds % 10 == 0)
+            {
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+            }
         }
 
         private static void Form_KeyDown(object sender, KeyEventArgs e)
@@ -121,6 +295,20 @@ namespace CCreative
             else if (e.KeyCode == Keys.F5)
             {
                 Application.Restart();
+            }
+
+            else if (e.KeyCode == Keys.Pause)
+            {
+                haveLoop = !haveLoop;
+
+                if (haveLoop)
+                {
+                    loop();
+                }
+                else
+                {
+                    noLoop();
+                }
             }
             mainFunctions.keyPressed(e);
         }
@@ -140,14 +328,14 @@ namespace CCreative
 
         private static void Form_MouseDown(object sender, MouseEventArgs e)
         {
-            mouseUp = false;
-            mouseDown = true;
+            mouseup = false;
+            mousedown = true;
         }
 
         private static void Form_MouseUp(object sender, MouseEventArgs e)
         {
-            mouseUp = true;
-            mouseDown = false;
+            mouseup = true;
+            mousedown = false;
         }
 
         private static void Form_Resize(object sender, EventArgs e)
@@ -158,8 +346,8 @@ namespace CCreative
             GC.WaitForPendingFinalizers();
             GC.Collect();
 
-            width = form.Width;
-            height = form.Height;
+            Width = form.Width;
+            Height = form.Height;
         }
 
         private static void Form_MouseMove(object sender, MouseEventArgs e)
@@ -167,7 +355,8 @@ namespace CCreative
             tempX = e.X;
             tempY = e.Y;
             tempPos = e.Location;
-            if (pMouseX != mouseX && pMouseY != mouseY)
+
+            if (pmousex != tempX && pmousey != tempY)
             {
                 mainFunctions.mouseDragged(e);
             }
@@ -175,6 +364,14 @@ namespace CCreative
 
         private static void Form_Load(object sender, EventArgs e)
         {
+            if (smoothing)
+            {
+                smooth();
+            }
+            else
+            {
+                noSmooth();
+            }
             mainFunctions.setup();
         }
 
@@ -182,25 +379,27 @@ namespace CCreative
         {
             framecount++;
             frames++;
-            mouseX = tempX;
-            mouseY = tempY;
-            mousePos = tempPos;
+
+            mousex = tempX;
+            mousey = tempY;
+            mousepos = tempPos;
+
+            if (smoothing)
+            {
+                smooth();
+            }
+            else
+            {
+                noSmooth();
+            }
+
             mainFunctions.draw();
 
             Drawing.myBuffer.Render();
 
-            pMouseX = mouseX;
-            pMouseY = mouseY;
-            PMousePos = mousePos;
-
-            BrushColor = Color.Transparent;
-            PenColor = Color.Transparent;
-            PenWidht = 1;
-
-            if (frameCount % 600 == 0)
-            {
-                GC.Collect();
-            }
+            pmousex = mousex;
+            pmousey = mousey;
+            pmousepos = mousepos;
         }
 
         public static int frameCount
@@ -220,29 +419,7 @@ namespace CCreative
         {
             return Framerate;
         }
-
-        public static Color background(Color backcolor)
-        {
-            Drawing.myBuffer.Graphics.Clear(backcolor);
-            return backcolor;
-        }
-
-        public static Color background(int value)
-        {
-            Color clr = Color.Black;
-            if (colormode == colorModes.HSB)
-            {
-                clr = ColorTranslator.FromWin32(ColorHLSToRGB((int)map(value, 0, 360, 0, 240), 120, 240));
-            }
-            else if (colormode == colorModes.RGB)
-            {
-                value = (int)constrain(value, 0, 255);
-                clr = Color.FromArgb(255, value, value, value);
-            }
-            myBuffer.Graphics.Clear(clr);
-            return clr;
-        }
-
+        
         public static void noCursor()
         {
             cursor = false;
@@ -250,9 +427,13 @@ namespace CCreative
 
         public static void clear()
         {
-            canvas.Invalidate();
-            canvas.BackColor = Color.Transparent;
             time.Enabled = false;
+        }
+
+        public static int delay(int milliseconds)
+        {
+            Thread.Sleep(milliseconds);
+            return milliseconds;
         }
 
         public static void noLoop()
@@ -277,32 +458,52 @@ namespace CCreative
             return toPrint;
         }
 
+        public static T[] printArray<T>(T[] toPrint)
+        {
+            for (int i = 0; i < toPrint.Length; i++)
+            {
+                println(String.Format("[{0}] {1}", i, toPrint[i]));
+            }
+            return toPrint;
+        }
+
         public static bool fullScreen()
         {
             fullscreen = !fullscreen;
             if (fullscreen)
             {
-                size = form.Size;
                 form.FormBorderStyle = FormBorderStyle.None;
                 form.Size = Screen.FromControl(form).WorkingArea.Size;
                 form.Location = Screen.FromControl(form).WorkingArea.Location;
+
+                centerx = width / 2;
+                centery = height / 2;
+                centerscreen = new Point(centerx, centerY);
             }
             else
             {
                 form.FormBorderStyle = FormBorderStyle.FixedSingle;
-                form.Size = size;
                 centerWindow();
             }
             return fullscreen;
         }
 
-        public static void createCanvas(int width, int height)
+        public static void size(int width, int height, RenderTypes renderer)
         {
-            form.Size = new Size(width + 16, height + 39);
-            width = form.Width;
-            height = form.Height;
-            size = form.Size;
+            form.ClientSize = new Size(width, height);
+            General.Width = form.ClientSize.Width;
+            General.Height = form.ClientSize.Height;
+
+            centerx = width / 2;
+            centery = height / 2;
+            centerscreen = new Point(centerx, centerY);
+
             centerWindow();
+        }
+
+        public static void size(int width, int height)
+        {
+            size(width, height, GDI);
         }
 
         public static Point centerWindow()
@@ -315,10 +516,14 @@ namespace CCreative
 
         public static void resizeCanvas(int width, int height)
         {
-            form.Size = new Size(width + 16, height + 39);
-            width = form.Width;
-            height = form.Width;
-            size = form.Size;
+            form.ClientSize = new Size(width + 16, height + 39);
+            General.Width = form.ClientSize.Width;
+            General.Height = form.ClientSize.Height;
+
+            centerx = width / 2;
+            centery = height / 2;
+            centerscreen = new Point(centerx, centerY);
+
             centerWindow();
         }
     }

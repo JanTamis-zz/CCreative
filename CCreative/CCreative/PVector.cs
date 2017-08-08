@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows;
+using static CCreative.Math;
+using static CCreative.General;
 
 namespace CCreative
 {
     public class PVector
     {
-        public float X, Y, Z;
+        float X, Y, Z;
 
         public float x
         {
@@ -27,12 +29,6 @@ namespace CCreative
             get { return Z; }
         }
 
-        private void addTranslation()
-        {
-            x += Drawing.translate().X;
-            y += Drawing.translate().Y;
-        }
-
         public PVector()
         {
             x = 0;
@@ -40,22 +36,49 @@ namespace CCreative
             z = 0;
         }
 
-        public PVector(float x, float y)
+        public PVector(double x, double y)
         {
-            this.x = x;
-            this.y = y;
+            this.x = (float)x;
+            this.y = (float)y;
+        }
 
-            addTranslation();
+        
+        public PVector(double x, double y, double z)
+        {
+            this.x = (float)x;
+            this.y = (float)y;
+            this.z = (float)z;
+        }
+
+        public PVector(double[] xyz)
+        {
+            if (xyz.Length == 3)
+            {
+                this.x = (float)xyz[0];
+                this.y = (float)xyz[1];
+                this.z = (float)xyz[2];
+            }
+            else
+            {
+                throw new ArgumentException("Array must contain exactly three components , (x,y,z)");
+            }
+        }
+
+        public PVector(PVector v1)
+        {
+            this.x = v1.X;
+            this.y = v1.Y;
+            this.z = v1.Z;
+        }
+
+        public PVector(PointF point)
+        {
+            this.x = point.X;
+            this.y = point.Y;
+            this.z = 0;
         }
 
         #region set
-        public PVector(float x, float y, float z)
-        {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-        }
-
         public PVector set(float x, float y)
         {
             this.x = x;
@@ -93,20 +116,20 @@ namespace CCreative
 
         public PVector random2D()
         {
-            Random rand = new Random();
-            x = map(rand.Next(-100, 100), -100, 100, -1, 1);
-            y = map(rand.Next(-100, 100), -100, 100, -1, 1);
+            x = map(random(-100, 100), -100, 100, -1, 1);
+            y = map(random(-100, 100), -100, 100, -1, 1);
+            normalize();
 
             return this;
         }
 
         public PVector random3D()
         {
-            Random rand = new Random();
-            x = map(rand.Next(-100, 100), -100, 100, -1, 1);
-            y = map(rand.Next(-100, 100), -100, 100, -1, 1);
-            z = map(rand.Next(-100, 100), -100, 100, -1, 1);
-            
+            x = map(random(-100, 100), -100, 100, -1, 1);
+            y = map(random(-100, 100), -100, 100, -1, 1);
+            z = map(random(-100, 100), -100, 100, -1, 1);
+
+            normalize();
 
             return this;
         }
@@ -122,6 +145,7 @@ namespace CCreative
             vec.Normalize();
             x = (float)vec.X;
             y = (float)vec.Y;
+            //set(x / mag(), y / mag(), z / mag());
             return this;
         }
 
@@ -150,8 +174,6 @@ namespace CCreative
         {
             this.x += x;
             this.y += y;
-
-            addTranslation();
             return this;
         }
 
@@ -160,7 +182,6 @@ namespace CCreative
             this.x += x;
             this.y += y;
             this.z += z;
-            addTranslation();
 
             return this;
         }
@@ -170,22 +191,6 @@ namespace CCreative
             x += vector.x;
             y += vector.y;
             z += vector.z;
-            addTranslation();
-
-            return this;
-        }
-
-        public PVector add(PVector vector1, PVector vector2)
-        {
-            x += vector1.x;
-            y += vector1.y;
-            z += vector1.z;
-
-            x += vector2.x;
-            y += vector2.y;
-            z += vector2.z;
-
-            addTranslation();
 
             return this;
         }
@@ -198,7 +203,6 @@ namespace CCreative
                 y += items.y;
                 z += items.z;
             }
-            addTranslation();
             return this;
         }
 
@@ -210,7 +214,6 @@ namespace CCreative
                 y += items.y;
                 z += items.z;
             }
-            addTranslation();
             return this;
         }
         #endregion
@@ -240,11 +243,6 @@ namespace CCreative
             z -= vector.z;
 
             return this;
-        }
-
-        public PVector sub(PVector vector1, PVector vector2)
-        {
-            return vector1.set(vector1.x - vector2.x, vector1.y - vector2.y);
         }
 
         public PVector sub(PVector[] vectors)
@@ -390,7 +388,7 @@ namespace CCreative
             return this;
         }
 
-        public PVector limit(float Limit)
+        public PVector limit(double Limit)
         {
             if (mag() > Limit)
             {
@@ -438,12 +436,12 @@ namespace CCreative
 
         public float dot(PVector vector)
         {
-            return (this.x * vector.x) + (this.y * vector.y) + (this.z * vector.z);
+            return PVector.Dot(this, vector);
         }
 
         public float dot(float x, float y, float z)
         {
-            return (this.x * x) + (this.y * y) + (this.z * z);
+            return PVector.Dot(this, new PVector(x, y, z));
         }
 
         public PVector copy()
@@ -472,31 +470,11 @@ namespace CCreative
 
         public PVector cross(PVector vector)
         {
-            double x, y, z;
-            x = this.y * vector.z - vector.y * this.z;
-            y = (this.x * vector.z - vector.x * this.z) * -1;
-            z = this.x * vector.y - vector.x * this.y;
+            PVector temp = PVector.Cross(this, vector);
+            x = temp.x;
+            y = temp.y;
+            z = temp.z;
             
-            return this;
-        }
-
-        public PVector cross(PVector vector1, PVector vector2)
-        {
-            x = vector1.y * vector2.z - vector2.y * vector1.z;
-            y = (vector1.x * vector2.z - vector2.x * vector1.z) * -1;
-            z = vector1.x * vector2.y - vector2.x * vector1.y;
-
-            return this;
-        }
-
-        public PVector cross(PVector vector1, PVector vector2, PVector safeVector)
-        {
-            x = vector1.y * vector2.z - vector2.y * vector1.z;
-            y = (vector1.x * vector2.z - vector2.x * vector1.z) * -1;
-            z = vector1.x * vector2.y - vector2.x * vector1.y;
-
-            safeVector = this;
-
             return this;
         }
 
@@ -514,5 +492,117 @@ namespace CCreative
         {
             return new Vector(x, y);
         }
+
+        public float[] Array
+        {
+            get { return new float[] { x, y, z }; }
+        }
+
+        public static PVector Add(PVector v1, PVector v2)
+        {
+            return new PVector(
+                v1.x + v2.x,
+                v1.y + v2.y,
+                v1.z + v2.z);
+        }
+
+        public static PVector Cross(PVector v1, PVector v2)
+        {
+            return
+               new PVector
+               (
+                  v1.y * v2.z - v1.z * v2.y,
+                  v1.z * v2.x - v1.x * v2.z,
+                  v1.x * v2.y - v1.y * v2.x
+               );
+        }
+
+        public static float Dot(PVector v1, PVector v2)
+        {
+            return
+            (
+               v1.x * v2.x +
+               v1.y * v2.y +
+               v1.z * v2.z
+            );
+        }
+
+        public static float Dist(PVector v1, PVector v2)
+        {
+            return
+               sqrt
+               (
+                   (v1.X - v2.X) * (v1.X - v2.X) +
+                   (v1.Y - v2.Y) * (v1.Y - v2.Y) +
+                   (v1.Z - v2.Z) * (v1.Z - v2.Z)
+               );
+        }
+
+        public static PVector FromAngle(double angle)
+        {
+            return new PVector().fromAngle(angle);
+        }
+
+        #region operators
+        public static bool operator <(PVector v1, PVector v2)
+        {
+            return v1.mag() < v2.mag();
+        }
+
+        public static bool operator <=(PVector v1, PVector v2)
+        {
+            return v1.mag() <= v2.mag();
+        }
+
+        public static bool operator >(PVector v1, PVector v2)
+        {
+            return v1.mag() > v2.mag();
+        }
+
+        public static bool operator >=(PVector v1, PVector v2)
+        {
+            return v1.mag() >= v2.mag();
+        }
+
+        //public static bool operator ==(PVector v1, PVector v2)
+        //{
+        //    if (v1 == null && v2 == null)
+        //    {
+        //        return true;
+        //    }
+        //    else if (v1 != null && v1 == null)
+        //    {
+        //        return false;
+        //    }
+        //    return
+        //        v1.x == v2.x &&
+        //        v1.y == v2.y &&
+        //        v1.z == v2.z;
+        //}
+
+        //public static bool operator !=(PVector v1, PVector v2)
+        //{
+        //    return !(v1 == v2);
+        //}
+
+        public static PVector operator *(PVector v1, double s2)
+        {
+            return
+               new PVector
+               (
+                  v1.x * s2,
+                  v1.y * s2,
+                  v1.z * s2
+               );
+        }
+
+        public static PVector operator *(double s1, PVector v2)
+        {
+            return v2 * s1;
+        }
+
+        
+
+        #endregion
     }
 }
