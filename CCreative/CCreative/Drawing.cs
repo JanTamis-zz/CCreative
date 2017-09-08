@@ -577,15 +577,38 @@ namespace CCreative
             line(point1.X, point1.Y, point2.X, point2.Y);
         }
 
-        public static PointF point(double x, double y)
+        public static void point(double x, double y)
         {
-            return point(new PointF((float)x, (float)y));
+            transform();
+
+            if (PenColor.A > 0)
+            {
+                int totalVertecies = 5;
+
+                double angle = 360 / totalVertecies;
+
+                PointF[] vertbuffer = new PointF[totalVertecies];
+
+                PointF vector = new PointF(0, 0);
+
+                //GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
+
+                for (double i = 0; i < totalVertecies; i++)
+                {
+                    vector.X = (float)(x + cos(radians(i * angle)) * PenWidht);
+                    vector.Y = (float)(y + sin(radians(i * angle)) * PenWidht);
+                    vertbuffer[floor(i)] = vector;
+                }
+
+                brush = new SolidBrush(PenColor);
+                myBuffer.Graphics.FillPolygon(brush, vertbuffer);
+            }
+            myBuffer.Graphics.ResetTransform();
         }
 
-        public static PointF point(PointF point)
+        public static void point(PointF Point)
         {
-            ellipse(point.X, point.Y, PenWidht);
-            return point;
+            point(Point.X, Point.Y);
         }
 
         public static void line(double x1, double y1, double x2, double y2)
@@ -738,15 +761,36 @@ namespace CCreative
                     if (center)
                     {
                         format.LineAlignment = StringAlignment.Center;
+
+                        GraphicsPath p = new GraphicsPath();
+                        p.AddString(
+                            text,             // text to draw
+                            font.FontFamily,  // or any other font family
+                            (int)FontStyle.Regular,      // font style (bold, italic, etc.)
+                            myBuffer.Graphics.DpiY * size / 72,       // em size
+                            point,              // location where to draw text
+                            new StringFormat());          // set options here (e.g. center alignment)
+                        myBuffer.Graphics.DrawPath(new Pen(PenColor, PenWidht), p);
+
                         myBuffer.Graphics.DrawString(text, font, brush, point);
                     }
                     else
                     {
+                        GraphicsPath p = new GraphicsPath();
+                        p.AddString(
+                            text,             // text to draw
+                            font.FontFamily,  // or any other font family
+                            (int)FontStyle.Regular,      // font style (bold, italic, etc.)
+                            myBuffer.Graphics.DpiY * size / 72,       // em size
+                            point,              // location where to draw text
+                            new StringFormat());          // set options here (e.g. center alignment)
+                        myBuffer.Graphics.DrawPath(new Pen(PenColor, PenWidht), p);
+
                         myBuffer.Graphics.DrawString(text, font, brush, point, format);
                     }
-
+                    
                     myBuffer.Graphics.ResetTransform();
-                } 
+                }
             }
         }
 
@@ -773,16 +817,18 @@ namespace CCreative
 
         public static void drawFramerate()
         {
-            pushMatrix();
-            rotate(0);
-            translate(0, 0);
-            scale(1);
+            //pushMatrix();
+            //rotate(0);
+            //translate(0, 0);
+            //scale(1);
 
-            CenterText(false);
-            textLocation(TOPLEFT);
+            //CenterText(false);
+            //textLocation(TOPLEFT);
 
-            Text("FPS: " + frameRate(), new Point(0, 0));
-            popMatrix();
+            //Text("FPS: " + frameRate(), new Point(0, 0));
+            //popMatrix();
+
+            General.form.Text = "CCreative | " + frameRate().ToString("n") + " FPS";
         }
 
         public static void drawTotalTime()

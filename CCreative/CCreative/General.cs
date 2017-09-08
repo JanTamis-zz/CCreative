@@ -2,6 +2,7 @@
 using static CCreative.Colors;
 using static CCreative.Math;
 using static CCreative.Drawing;
+
 using System.Windows.Forms;
 using System.Drawing;
 using System.Threading;
@@ -44,6 +45,11 @@ namespace CCreative
         {
 
         }
+
+        public virtual void mousePressed(MouseEventArgs e)
+        {
+
+        }
     }
 
     public static class General
@@ -79,6 +85,7 @@ namespace CCreative
         static int setFramerate = 60;
         static System.Windows.Forms.Timer time;
         static System.Windows.Forms.Timer time2;
+        static Stopwatch Watch = new Stopwatch();
 
         static int totalSeconds = 0;
         static Stopwatch watch = new Stopwatch();
@@ -229,6 +236,7 @@ namespace CCreative
             General.form.MouseEnter += Form_MouseEnter;
             General.form.MouseLeave += Form_MouseLeave;
             General.form.MouseWheel += Form_MouseWheel;
+            General.form.MouseClick += Form_MouseClick;
 
             General.form.MaximizeBox = false;
             General.form.FormBorderStyle = FormBorderStyle.FixedSingle;
@@ -237,13 +245,15 @@ namespace CCreative
 
             var myObj = functions;
             mainFunctions = myObj as Function;
-
             
-
             General.form.Text = functions.GetType().Namespace;
-
             
             watch.Start();
+        }
+
+        private static void Form_MouseClick(object sender, MouseEventArgs e)
+        {
+            mainFunctions.mousePressed(e);
         }
 
         private static void UpdateTextPosition()
@@ -377,6 +387,9 @@ namespace CCreative
 
         private static void Time_Tick(object sender, EventArgs e)
         {
+            watch.Restart();
+            watch.Start();
+
             framecount++;
             frames++;
 
@@ -400,6 +413,12 @@ namespace CCreative
             pmousex = mousex;
             pmousey = mousey;
             pmousepos = mousepos;
+
+            if (Watch.ElapsedMilliseconds != 0)
+            {
+                Framerate = 1000 / Watch.ElapsedMilliseconds; 
+            }
+            Watch.Stop();
         }
 
         public static int frameCount
