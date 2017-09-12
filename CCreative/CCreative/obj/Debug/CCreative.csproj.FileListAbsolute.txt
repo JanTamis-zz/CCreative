@@ -9,11 +9,20 @@ D:\Users\Jan Tamis\Documents\Visual Studio 2017\Projects\CCreative\CCreative\obj
 E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative\CCreative\bin\Debug\Ccreative.dll.config
 E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative\CCreative\bin\Debug\Ccreative.dll
 E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative\CCreative\bin\Debug\Ccreative.pdb
-E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative\CCreative\bin\Debug\OpenTK.dll
-E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative\CCreative\bin\Debug\OpenTK.xml
 E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative\CCreative\obj\Debug\CCreative.Properties.Resources.resources
 E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative\CCreative\obj\Debug\CCreative.csproj.GenerateResource.Cache
 E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative\CCreative\obj\Debug\Ccreative.dll
 E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative\CCreative\obj\Debug\Ccreative.pdb
 E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative\CCreative\obj\Debug\CCreative.csprojResolveAssemblyReference.cache
-E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative\CCreative\obj\Debug\CCreative.csproj.CoreCompileInputs.cache
+E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative - Hardware Accelerated\CCreative\bin\Debug\Ccreative.dll.config
+E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative - Hardware Accelerated\CCreative\bin\Debug\Ccreative.dll
+E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative - Hardware Accelerated\CCreative\bin\Debug\Ccreative.pdb
+E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative - Hardware Accelerated\CCreative\obj\Debug\CCreative.csprojResolveAssemblyReference.cache
+E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative - Hardware Accelerated\CCreative\obj\Debug\CCreative.Properties.Resources.resources
+E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative - Hardware Accelerated\CCreative\obj\Debug\CCreative.csproj.GenerateResource.Cache
+E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative - Hardware Accelerated\CCreative\obj\Debug\Ccreative.dll
+E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative - Hardware Accelerated\CCreative\obj\Debug\Ccreative.pdb
+E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative - Hardware Accelerated\CCreative\bin\Debug\OpenTK.dll
+E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative - Hardware Accelerated\CCreative\bin\Debug\OpenTK.GLControl.dll
+E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative - Hardware Accelerated\CCreative\bin\Debug\OpenTK.xml
+E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative - Hardware Accelerated\CCreative\bin\Debug\OpenTK.GLControl.xml

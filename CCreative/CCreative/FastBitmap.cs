@@ -493,8 +493,8 @@ namespace CCreative
                 srcBitmapRect = Rectangle.Intersect(srcBitmapRect, new Rectangle(-destRect.X + srcRect.X, -destRect.Y + srcRect.Y, Width, Height));
 
                 // Calculate the rectangle containing the maximum possible area that is supposed to be affected by the copy region operation
-                int copyWidth = (int)Math.min(new int[] { srcBitmapRect.Width, destBitmapRect.Width });
-                int copyHeight = (int)Math.min(new int[] { srcBitmapRect.Height, destBitmapRect.Height });
+                int copyWidth = (int)Math.min(new double[] { srcBitmapRect.Width, destBitmapRect.Width });
+                int copyHeight = (int)Math.min(new double[] { srcBitmapRect.Height, destBitmapRect.Height });
 
                 if (copyWidth == 0 || copyHeight == 0)
                     return;

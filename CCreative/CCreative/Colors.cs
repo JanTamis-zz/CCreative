@@ -19,98 +19,163 @@ namespace CCreative
         [DllImport("shlwapi.dll")]
         static extern int ColorHLSToRGB(int H, int L, int S);
         static colorModes colormode = colorModes.RGB;
-        ///<summary>
-        ///Returns the alpha component of a Color.
-        ///</summary>
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Extracts the alpha value from a color. </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <param name="color">    The color to check. </param>
+        ///
+        /// <returns>   The alpha component. </returns>
+
         public static byte alpha(Color color)
         {
             return color.A;
         }
 
-        ///<summary>
-        ///Returns the red component of a Color.
-        ///</summary>
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Extracts the red value from a color. </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <param name="color">    The color to check. </param>
+        ///
+        /// <returns>   The red component. </returns>
+
         public static byte red(Color color)
         {
             return color.R;
         }
 
-        ///<summary>
-        ///Returns the green component of a Color.
-        ///</summary>
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Extracts the green value from a color or pixel array. </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <param name="color">    The color to check. </param>
+        ///
+        /// <returns>   The green component. </returns>
+
         public static byte green(Color color)
         {
             return color.G;
         }
 
-        ///<summary>
-        ///Returns the blue component of a Color.
-        ///</summary>
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Extracts the blue value from a color or pixel array. </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <param name="color">    The color to check. </param>
+        ///
+        /// <returns>   The blue component. </returns>
+
         public static byte blue(Color color)
         {
             return color.B;
         }
 
-        ///<summary>
-        ///Returns the hue of a Color.
-        ///</summary>
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Extracts the hue value from a color. </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <param name="color">    The color to check. </param>
+        ///
+        /// <returns>   The hue component. </returns>
+
         public static float hue(Color color)
         {
             return color.GetHue();
         }
 
-        ///<summary>
-        ///Returns the saturation of a Color.
-        ///</summary>
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Extracts the saturation value from a color. </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <param name="color">    The color to check. </param>
+        ///
+        /// <returns>   The saturation component. </returns>
+
         public static float saturation(Color color)
         {
             return color.GetSaturation();
         }
 
-        ///<summary>
-        ///Returns the brightness/lightness of a Color.
-        ///</summary>
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Extracts the HSB brightness value from a color. </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <param name="color">    The color to check. </param>
+        ///
+        /// <returns>   The brightness component. </returns>
+
         public static float brightness(Color color)
         {
             return color.GetBrightness();
         }
 
-        ///<summary>
-        ///Returns a random Color between a range.
-        ///</summary>
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Returns a random Color between a range. </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <param name="min">          The minimum value. </param>
+        /// <param name="max">          The maximum value. </param>
+        /// <param name="transparancy"> The transparancy of the color. </param>
+        ///
+        /// <returns>   The random color. </returns>
+
         public static Color randomColor(byte min, byte max, byte transparancy)
         {
             return Color.FromArgb(transparancy, floor(random(min, max)), floor(random(min, max)), floor(random(min, max)));
         }
 
-        ///<summary>
-        ///Returns a random color beween the given values.
-        ///</summary>
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Returns a random Color between a range. </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <param name="min">  The minimum value. </param>
+        /// <param name="max">  The maximum value. </param>
+        ///
+        /// <returns>   The random color. </returns>
+
         public static Color randomColor(byte min, byte max)
         {
             return randomColor(min, max, 255);
         }
 
-        ///<summary>
-        ///Returns a random color.
-        ///</summary>
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Returns a random Color between a range. </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <returns>   The random color. </returns>
+
         public static Color randomColor()
         {
             return randomColor(0, 255, 255);
         }
-        
-        ///<summary>
-        ///Returns a random color with the given transparancy.
-        ///</summary>
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Returns a random Color between a range. </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <param name="transparancy"> The transparancy of the color. </param>
+        ///
+        /// <returns>   The random color. </returns>
+
         public static Color randomColor(byte transparancy)
         {
             return randomColor(0, 255, transparancy);
         }
 
-        ///<summary>
-        ///Returns a color from the given hue, lightness and saturation 
-        ///</summary>
-        public static Color ColorFromHSV(double h, double l, double s)
+        private static Color ColorFromHSV(double h, double l, double s)
         {
             h = h % 360;
             double p2;
@@ -151,7 +216,7 @@ namespace CCreative
         }
 
         ///<summary>
-        ///The possible Color modes.
+        ///The possible Color modes
         ///</summary>
         public enum colorModes
         {
@@ -159,41 +224,80 @@ namespace CCreative
             HSB
         }
 
-        ///<summary>
-        ///Sets the Color mode.
-        ///</summary>
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   colorMode() changes the way CCreative interprets color data. </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <param name="modes">    The modes. </param>
+
         public static void colorMode(colorModes modes)
         {
             colormode = modes;
         }
 
-        ///<summary>
-        ///Returns the current colormode.
-        ///</summary>
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   returns the mode CCreative interprets color date. </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <returns>   the mode CCreative interprets color date. </returns>
+
         public static colorModes colorMode()
         {
             return colormode;
         }
 
-        ///<summary>
-        ///Inverts the given color.
-        ///</summary>
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Inverts a color. </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <param name="color">    The color to invert. </param>
+        ///
+        /// <returns>   the inverted color. </returns>
+
         public static Color invertColor(Color color)
         {
             return Color.FromArgb(color.ToArgb() ^ 0xffffff);
         }
 
-        ///<summary>
-        ///Inverts a color from a interger value.
-        ///</summary>
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Inverts a color. </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <param name="value">    The grayscale or hue component to invert. </param>
+        ///
+        /// <returns>   the inverted color. </returns>
+
         public static Color invertColor(int value)
         {
-            return invertColor(color(value));
+            Color clr = Color.Transparent;
+            if (colormode == colorModes.RGB)
+            {
+                value = (int)constrain(value, 0, 255);
+                clr = Color.FromArgb(255 - value, 255 - value, 255 - value);
+            }
+            else if (colormode == colorModes.HSB)
+            {
+                clr = ColorTranslator.FromWin32(ColorHLSToRGB(value, 120, 240));
+                clr = invertColor(clr);
+            }
+            return clr;
         }
 
-        ///<summary>
-        ///Returns a color beween two colors with the given offset.
-        ///</summary>
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Blends two colors to find a third color somewhere between them. </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <param name="color1">   Interpolate from this color. </param>
+        /// <param name="color2">   Interpolate to this color. </param>
+        /// <param name="atm">      number between 0 and 1. </param>
+        ///
+        /// <returns>   A Color. </returns>
+
         public static Color lerpColor(Color color1, Color color2, double atm)
         {
             double R, G, B;
@@ -210,17 +314,21 @@ namespace CCreative
             return ColorTranslator.FromWin32(ColorHLSToRGB(hue, 120, 240));
         }
 
-        ///<summary>
-        ///Returns a color from the given value, this depents on the colormode
-        ///<para>RGB: a grayscale color.</para>
-        ///<para>HSB: the value will be used for the Hue</para> 
-        ///</summary>
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Creates colors for storing in variables of the Color datatype </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <param name="value">    The grayscale or hue component. </param>
+        ///
+        /// <returns>   A new Color. </returns>
+
         public static Color color(int value)
         {
             Color clr = Color.Transparent;
             if (colorMode() == colorModes.HSB)
             {
-                value = (int)constrain(value, 0, 360);
+                value = value % 360;
                 clr = ColorTranslator.FromWin32(ColorHLSToRGB((int)map(value, 0, 360, 0, 240), 120, 240));
             }
             else if (colorMode() == colorModes.RGB)
@@ -232,18 +340,23 @@ namespace CCreative
             return clr;
         }
 
-        ///<summary>
-        ///Returns a color from the given value plus the  given transparancy, this depents on the colormode
-        ///<para>RGB: a grayscale color.</para>
-        ///<para>HSB: the value will be used for the Hue</para> 
-        ///</summary>
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Creates colors for storing in variables of the Color datatype. </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <param name="value">        The grayscale or hue component. </param>
+        /// <param name="transparancy"> The transparancy of the color. </param>
+        ///
+        /// <returns>   A new Color. </returns>
+
         public static Color color(int value, int transparancy)
         {
             Color clr = Color.Transparent;
 
             if (colorMode() == colorModes.HSB)
             {
-                value = (int)constrain(value, 0, 255);
+                value = value % 360;
                 clr = hueToColor(value);
             }
             else if (colorMode() == colorModes.RGB)
@@ -255,11 +368,17 @@ namespace CCreative
             return clr;
         }
 
-        ///<summary>
-        ///Returns a color from the given values, this depents on the colormode
-        ///<para>RGB: a color from the given Red, Green and Blue values.</para>
-        ///<para>HSB: a color from the given Hue, Saturation and brightness.</para> 
-        ///</summary>
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Creates colors for storing in variables of the Color datatype. </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <param name="value1">   Red or hue value relative to the current color range. </param>
+        /// <param name="value2">   Green or saturation value relative to the current color range. </param>
+        /// <param name="value3">   Blue or brightness value relative to the current color range. </param>
+        ///
+        /// <returns>   A new Color. </returns>
+
         public static Color color(double value1, double value2, double value3)
         {
             Color clr = Color.Transparent;
@@ -278,63 +397,21 @@ namespace CCreative
             return clr;
         }
 
-        ///<summary>
-        ///Returns a color from the given values and a given transparancy, this depents on the colormode.
-        ///<para>RGB: a color from the given Red, Green and Blue values.</para>
-        ///<para>HSB: a color from the given Hue, Saturation and brightness.</para> 
-        ///</summary>
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Creates colors for storing in variables of the Color datatype. </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <param name="value1">       Red or hue value relative to the current color range. </param>
+        /// <param name="value2">       Green or saturation value relative to the current color range. </param>
+        /// <param name="value3">       Blue or brightness value relative to the current color range. </param>
+        /// <param name="transparancy"> The transparancy of the color. </param>
+        ///
+        /// <returns>   A new Color. </returns>
+
         public static Color color(int value1, int value2, int value3, int transparancy)
         {
             return Color.FromArgb(transparancy, color(value1, value2, value3));
-        }
-
-        ///<summary>
-        ///Returns a color from a hexdecimal number.
-        ///</summary>
-        public static Color color(string hexValue)
-        {
-            return ColorTranslator.FromHtml(hexValue);
-        }
-
-        ///<summary>
-        ///Returns a color from a hexdecimal number, and the given transparancy.
-        ///</summary>
-        public static Color color(string hexValue, byte transparancy)
-        {
-            return Color.FromArgb(transparancy, ColorTranslator.FromHtml(hexValue));
-        }
-
-        /// <summary>
-        /// Creates color with corrected brightness.
-        /// </summary>
-        /// <param name="color">Color to correct.</param>
-        /// <param name="correctionFactor">The brightness correction factor. Must be between -1 and 1. 
-        /// Negative values produce darker colors.</param>
-        /// <returns>
-        /// Corrected <see cref="Color"/> structure.
-        /// </returns>
-        public static Color ChangeColorBrightness(Color color, double correctionFactor)
-        {
-            correctionFactor = constrain(correctionFactor, -1, 1);
-            double red = color.R;
-            double green = color.G;
-            double blue = color.B;
-
-            if (correctionFactor < 0)
-            {
-                correctionFactor = 1 + correctionFactor;
-                red *= correctionFactor;
-                green *= correctionFactor;
-                blue *= correctionFactor;
-            }
-            else
-            {
-                red = (255 - red) * correctionFactor + red;
-                green = (255 - green) * correctionFactor + green;
-                blue = (255 - blue) * correctionFactor + blue;
-            }
-
-            return Color.FromArgb(color.A, (int)red, (int)green, (int)blue);
         }
     }
 }

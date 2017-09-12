@@ -17,68 +17,120 @@ namespace CCreative
     {
         //conversion
 
-        //SerialPort.ReadLine();
-        static SerialPort port = new SerialPort();
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Converts a value to its floating point representation. </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <typeparam name="T">    Generic type parameter. </typeparam>
+        /// <param name="arg">  The value to convert. </param>
+        ///
+        /// <returns>   The parsed float. </returns>
 
-        ///<summary>
-        ///Returns a converted float number.
-        ///</summary>
         public static float Float<T>(T arg)
         {
             return float.Parse(arg.ToString());
         }
 
-        ///<summary>
-        ///Returns a converted interger number.
-        ///</summary>
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Converts a boolean, string, or float to its integer representation. </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <typeparam name="T">    Generic type parameter. </typeparam>
+        /// <param name="arg">  The value to convert. </param>
+        ///
+        /// <returns>   The parsed interger. </returns>
+
         public static int Int<T>(T arg)
         {
             return int.Parse(arg.ToString());
         }
 
-        ///<summary>
-        ///Returns a converted string.
-        ///</summary>
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Converts a boolean, string or number to its string representation. </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <typeparam name="T">    Generic type parameter. </typeparam>
+        /// <param name="arg">  The value to convert. </param>
+        ///
+        /// <returns>   The parsed string. </returns>
+
         public static string str<T>(T arg)
         {
             return arg.ToString();
         }
 
-        ///<summary>
-        ///Returns a converted boolean.
-        ///</summary>
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Converts a number or string to its boolean representation. </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <typeparam name="T">    Generic type parameter. </typeparam>
+        /// <param name="arg">  The value to convert. </param>
+        ///
+        /// <returns>   The parsed boolean. </returns>
+
         public static bool Boolean<T>(T arg)
         {
             return bool.Parse(arg.ToString());
         }
 
-        ///<summary>
-        ///Returns a converted byte number.
-        ///</summary>
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Converts a number, string or boolean to its byte representation. </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <typeparam name="T">    Generic type parameter. </typeparam>
+        /// <param name="arg">  The value to convert. </param>
+        ///
+        /// <returns>   The parsed byte. </returns>
+
         public static byte Byte<T>(T arg)
         {
             return byte.Parse(arg.ToString());
         }
 
-        ///<summary>
-        ///Returns a char array from the conversion.
-        ///</summary>
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Converts a number or string to its corresponding single-character string representation. </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <typeparam name="T">    Generic type parameter. </typeparam>
+        /// <param name="arg">  The value to convert. </param>
+        ///
+        /// <returns>   The converted char. </returns>
+
         public static char Char<T>(T arg)
         {
             return char.Parse(arg.ToString());
         }
 
-        ///<summary>
-        ///Returns a converted hex value.
-        ///</summary>
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Converts a number to a string in its equivalent hexadecimal notation. </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <param name="number">       value to parse. </param>
+        /// <param name="maxNumbers">   (Optional) The maximum numbers. </param>
+        ///
+        /// <returns>   A string. </returns>
+
         public static string Hex(int number, int maxNumbers = 8)
         {
             return number.ToString("X" + maxNumbers.ToString());
         }
 
-        ///<summary>
-        ///Convert hex to a interger.
-        ///</summary>
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Converts a string representation of a hexadecimal number to its equivalent integer value. </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <param name="hexValue"> The hexadecimal value. </param>
+        ///
+        /// <returns>   An int. </returns>
+
         public static int unHex(string hexValue)
         {
             return int.Parse(hexValue, System.Globalization.NumberStyles.HexNumber);
@@ -86,62 +138,117 @@ namespace CCreative
 
         //String Function
 
-        ///<summary>
-        ///Returns a new array that is joined by a given seperator.
-        ///</summary>
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Combines an array of Strings into one String, each separated by the character(s) used for the separator parameter. </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <param name="list">         Array of Strings to be joined. </param>
+        /// <param name="separator">    String to be placed between each item. </param>
+        ///
+        /// <returns>   The combined string. </returns>
+
         public static string join(string[] list, string separator)
         {
             return string.Join(separator, list);
         }
 
-        ///<summary>
-        ///Returns a new array that is split from the given pattern.
-        ///</summary>
-        public static string[] split(string value, string pattern)
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   The split() function breaks a String into pieces using a character or string as the delimiter. </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <param name="value">    The String to be split. </param>
+        /// <param name="delim">    The String used to separate the data. </param>
+        ///
+        /// <returns>   The string array that holds the strings. </returns>
+
+        public static string[] split(string value, string delim)
         {
-            Regex regex = new Regex(pattern);
+            Regex regex = new Regex(delim);
             return regex.Split(value);
         }
 
-        ///<summary>
-        ///Returns a new array that is split from the given pattern and the following items: Tab and NewLine.
-        ///</summary>
-        public static string[] splitToken(string value, string pattern)
-        {
-            Regex regex = new Regex(pattern + @"\t\n\r\f");
-            return regex.Split(value);
-        }
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   The splitTokens() function splits a String at one or many character delimiters or "tokens". </summary>
+        ///
+        ///
+        /// <param name="value">    The String to be split. </param>
+        /// <param name="delim">    (Optional) List of individual Strings that will be used as separators. </param>
+        ///
+        /// <returns>   A string[]. </returns>
 
-        ///<summary>
-        ///Returns a new array that is split from the following items: Tab and NewLine.
-        ///</summary>
-        public static string[] splitToken(string value)
+        public static string[] splitToken(string value, string delim = null)
         {
-            return splitToken(value, "");
+            Regex regex = new Regex(delim + @"\t\n\r\f");
+            return regex.Split(value);
         }
 
         //Array Functions
 
-        ///<summary>
-        ///Returns a array that appends the value to the array.
-        ///</summary>
-        public static T[] append<T>(T[] array, T value)
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>Appends an value to the given array. </summary>
+        ///
+        ///
+        /// <typeparam name="T">    Generic type parameter. </typeparam>
+        /// <param name="array">    The array. </param>
+        /// <param name="value">    The value. </param>
+        ///
+        /// <returns>the new array Array. </returns>
+
+        public static Array append<T>(Array array, T value)
         {
             List<T> temp = array.Cast<T>().ToList();
             temp.Add(value);
             return temp.ToArray();
         }
 
-        ///<summary>
-        ///Returns the value form the given portname and baudrate.
-        ///</summary>
-        private static string readLine(string portName, int baudrate)
+        public static void printArray<T>(T[] array)
         {
-            port.Close();
-            port.PortName = portName;
-            port.BaudRate = baudrate;
-            port.Open();
-            return port.ReadExisting();
+            if (array.Length == 0)
+            {
+                println("Array is empty!");
+                return;
+            }
+
+            Console.WriteLine("[{0}]", string.Join(", ", array));
+        }
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Swaps 2 indexes of an arrray. </summary>
+        ///
+        ///
+        /// <typeparam name="T">    The type of the array. </typeparam>
+        /// <param name="array">    The array to swap the indexes from. </param>
+        /// <param name="i">    The first index. </param>
+        /// <param name="j">    The second index. </param>
+
+        public static void swap<T>(T[] array, int i, int j)
+        {
+            T temp = array[i];
+            array[i] = array[j];
+            array[j] = temp;
+        }
+
+        public static T[] Splice<T>(this T[] source, int index, int count)
+        {
+            var items = source.ToList().GetRange(index, count);
+            source.ToList().RemoveRange(index, count);
+            return items.ToArray();
+        }
+
+        public static void append<T>(this T[] source, T[] toAdd)
+        {
+            List<T> termsList = source.ToList();
+
+            foreach (T item in toAdd)
+            {
+                termsList.Add(item);
+            }
+
+            // You can convert it back to an array if you would like to
+            T[] terms = termsList.ToArray();
+
         }
     }
 }
