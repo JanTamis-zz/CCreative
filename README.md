@@ -116,3 +116,4 @@ namespace WindowsFormsApp1
     }
 }        
 ```
+© Alle rechten voorbehouden 
