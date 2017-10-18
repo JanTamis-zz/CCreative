@@ -8,7 +8,7 @@ using System.Drawing;
 using System.Threading;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
-using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace CCreative
 {
@@ -68,8 +68,25 @@ namespace CCreative
         /// <summary>   The mouseDragged() function is called once every time the mouse moves. </summary>
         ///
         /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <param name="e">    Mouse move event information. </param>
 
-        public virtual void mouseDragged()
+        public virtual void mouseDragged(OpenTK.Input.MouseMoveEventArgs e)
+        {
+
+        }
+
+        public virtual void keyReleased()
+        {
+
+        }
+
+        public virtual void keyDown()
+        {
+
+        }
+
+        public virtual void Closed()
         {
 
         }
@@ -78,8 +95,10 @@ namespace CCreative
         /// <summary>   The function mouseWheel() is executed every time a vertical mouse wheel event is detected either triggered by an actual mouse wheel or by a touchpad. </summary>
         ///
         /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <param name="e">    Mouse wheel event information. </param>
 
-        public virtual void mouseWheel()
+        public virtual void mouseWheel(OpenTK.Input.MouseWheelEventArgs e)
         {
 
         }
@@ -89,12 +108,7 @@ namespace CCreative
 
         }
 
-        public virtual void mousePressed()
-        {
-
-        }
-
-        public virtual void keyReleased()
+        public virtual void resize()
         {
 
         }
@@ -109,12 +123,10 @@ namespace CCreative
         static int frames = 0;
         static bool fullscreen = false;
         static bool cursor = true;
+        static bool loop = true;
         
-        static Form form;
-        static System.Windows.Forms.Timer time;
-        static System.Windows.Forms.Timer time2;
-        static Stopwatch Watch = new Stopwatch();
-
+        static Form form1;
+        
         static int framecount;
         static double setFramerate = 60;
         static System.Windows.Forms.Timer timer2;
@@ -122,8 +134,16 @@ namespace CCreative
         
         static DateTime TotalTime = new DateTime();
         static double TotalFramerate = 0;
+        static Camera2D camera = new Camera2D();
 
         public static RenderTypes Renderer { get; private set; }
+        
+        public static Keys? keyCode { get; private set; }
+        public static char? key { get; private set; }
+        public static bool Shift { get; private set; }
+        public static bool Alt { get; private set; }
+        public static bool keyRepeat { get; private set; }
+        public static bool keypressed { get; private set; }
 
         public static int mouseX { get; private set; }
 
@@ -147,9 +167,9 @@ namespace CCreative
 
         public static bool mouseUp { get; private set; }
 
-        public static int width { get; private set; }
+        public static int width { get { return window.Width; } }
 
-        public static int height { get; private set; }
+        public static int height { get { return window.Height; } }
 
         public static TimeSpan totalTime { get; private set; }
 
@@ -171,6 +191,33 @@ namespace CCreative
         }
 
         static Function mainFunctions;
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Initializes the CCreative library. </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <param name="form">         The form to use. </param>
+        /// <param name="functions">    The functions class that holds the functions. </param>
+
+        public static void init(Form form, Function functions)
+        {
+            //timer2 = new System.Windows.Forms.Timer();
+            //timer2.Interval = 1000;
+            //timer2.Tick += Time2_Tick;
+            //timer2.Enabled = true;
+            form1 = form;
+
+            form.Hide();
+            mainFunctions = functions;
+            mainFunctions.preload();
+            mainFunctions.setup();
+            
+            //timer.Interval = 1000;
+            //timer.Tick += Timer_Tick;
+            //timer.Enabled = true;
+            //timer.Start();
+        }
 
         private static void Timer_Tick(object sender, EventArgs e)
         {
@@ -242,7 +289,9 @@ namespace CCreative
 
             //window.TargetRenderFrequency = setFramerate;
             TotalFramerate += window.RenderFrequency;
-            
+
+            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
+
             mainFunctions.draw();
             
             pMouseX = mouseX;
@@ -266,7 +315,7 @@ namespace CCreative
 
             if (pMouseX != tempX && pMouseY != tempY && mouseDown)
             {
-                mainFunctions.mouseDragged();
+                mainFunctions.mouseDragged(e);
             }
         }
 
@@ -284,12 +333,22 @@ namespace CCreative
             {
                 Environment.Exit(0);
             }
-            mainFunctions.keyPressed();
+
+            Keys key;
+            Enum.TryParse(e.Key.ToString(), out key);
+
+            keyCode = key;
+            Shift = e.Shift;
+            Alt = e.Alt;
+            keyRepeat = e.IsRepeat;
+            keypressed = true;
+
+            mainFunctions.keyDown();
         }
 
         private static void Window_MouseWheel(object sender, OpenTK.Input.MouseWheelEventArgs e)
         {
-            mainFunctions.mouseWheel();
+            mainFunctions.mouseWheel(e);
         }
 
         private static void Window_MouseDown(object sender, OpenTK.Input.MouseButtonEventArgs e)
@@ -351,7 +410,7 @@ namespace CCreative
 
         public static void noCursor()
         {
-            cursor = false;
+            window.Cursor = MouseCursor.Empty;
         }
 
         ///-------------------------------------------------------------------------------------------------
@@ -361,7 +420,7 @@ namespace CCreative
 
         public static void Cursor()
         {
-            cursor = true;
+            window.Cursor = MouseCursor.Default;
         }
 
         ///-------------------------------------------------------------------------------------------------
@@ -373,11 +432,11 @@ namespace CCreative
         ///
         /// <returns>   An int. </returns>
 
-        public static int delay(int milliseconds)
-        {
-            Thread.Sleep(milliseconds);
-            return milliseconds;
-        }
+        //public static int delay(int milliseconds)
+        //{
+        //    Thread.Sleep(milliseconds);
+        //    return milliseconds;
+        //}
 
         ///-------------------------------------------------------------------------------------------------
         /// <summary>   The print() function writes to the console area. </summary>
@@ -434,10 +493,13 @@ namespace CCreative
             //     window.Size = Size; 
             //}
 
-            window.WindowState = WindowState.Fullscreen;
+            window.WindowState = WindowState.Maximized;
 
+            //zet het gebied waar de tekeningen in getekend kunnen worden
             GL.Viewport(0, 0, window.Width, window.Height);
-
+            //zet de coordiaaten systeem (niet mogelijk in GL 4).
+            SetOrthographicProjection();
+            
             return fullscreen;
         }
         
@@ -460,25 +522,41 @@ namespace CCreative
             {
                 window = new GameWindow(width, height, new OpenTK.Graphics.GraphicsMode(32, 24, 0, 0), "CCreative");
             }
+
             window.Icon = Properties.Resources.icon1;
 
             window.MouseDown += Window_MouseDown;
             window.MouseWheel += Window_MouseWheel;
             window.KeyDown += Window_KeyDown;
+            window.KeyUp += Window_KeyUp;
             window.MouseMove += Window_MouseMove;
             window.MouseUp += Window_MouseUp;
+            window.KeyPress += Window_KeyPress;
             window.RenderFrame += Window_RenderFrame;
             window.Closed += Window_Closed;
             window.Resize += Window_Resize;
             window.Load += Window_Load;
-            //window.UpdateFrame += Window_UpdateFrame;
-
-            window.WindowBorder = WindowBorder.Fixed;
             
             window.Run();
+        }
 
-            width = window.Width;
-            height = window.Height;
+        private static void Window_KeyPress(object sender, OpenTK.KeyPressEventArgs e)
+        {
+            key = e.KeyChar;
+            mainFunctions.keyPressed();
+        }
+
+        private static void Window_KeyUp(object sender, OpenTK.Input.KeyboardKeyEventArgs e)
+        {
+            keypressed = false;
+            mainFunctions.keyReleased();
+            keyCode = null;
+            key = null;
+        }
+
+        public static float averageFramerate()
+        {
+            return (float)TotalFramerate / frameCount;
         }
 
         ///-------------------------------------------------------------------------------------------------
@@ -488,105 +566,33 @@ namespace CCreative
         ///
         /// <param name="width">    The width of the display window in units of pixels. </param>
         /// <param name="height">   The height of the display window in units of pixels. </param>
-        /// <param name="renderer">   The renderer to use. </param>
-
-        public static void size(int width, int height, RenderTypes renderer)
-        {
-            switch (renderer)
-            {
-                case RenderTypes.GDI:
-                    CCreative.Drawing.currentContext = BufferedGraphicsManager.Current;
-                    myBuffer = currentContext.Allocate(form.CreateGraphics(),
-                        form.DisplayRectangle);
-
-                    //seed = random(double.MaxValue);
-
-                    General.form = new Form();
-
-                    time = new System.Windows.Forms.Timer();
-                    time.Interval = 15;
-                    time.Tick += Time_Tick;
-                    time.Enabled = true;
-
-                    time2 = new System.Windows.Forms.Timer();
-                    time2.Interval = 1000;
-                    time2.Tick += Time2_Tick;
-                    time2.Enabled = true;
-
-                    General.form.Load += Form_Load;
-                    General.form.MouseMove += Form_MouseMove;
-                    General.form.Resize += Form_Resize;
-                    General.form.KeyDown += Form_KeyDown;
-                    General.form.KeyUp += Form_KeyUp;
-                    General.form.MouseUp += Form_MouseUp;
-                    General.form.MouseDown += Form_MouseDown;
-                    General.form.MouseEnter += Form_MouseEnter;
-                    General.form.MouseLeave += Form_MouseLeave;
-                    General.form.MouseWheel += Form_MouseWheel;
-                    General.form.MouseClick += Form_MouseClick;
-
-                    General.form.MaximizeBox = false;
-                    General.form.FormBorderStyle = FormBorderStyle.FixedSingle;
-
-                    General.form.Icon = Properties.Resources.icon1;
-
-                    Watch.Start();
-                    form.Show();
-                    break;
-                case RenderTypes.P2D:
-                    window = new GameWindow(width, height, new OpenTK.Graphics.GraphicsMode(32, 24, 0, 8), "CCreative");
-                    window.Icon = Properties.Resources.icon1;
-
-                    window.MouseDown += Window_MouseDown;
-                    window.MouseWheel += Window_MouseWheel;
-                    window.KeyDown += Window_KeyDown;
-                    window.MouseMove += Window_MouseMove;
-                    window.MouseUp += Window_MouseUp;
-                    window.RenderFrame += Window_RenderFrame;
-                    window.Closed += Window_Closed;
-                    window.Resize += Window_Resize;
-                    window.Load += Window_Load;
-                    //window.UpdateFrame += Window_UpdateFrame;
-
-                    window.WindowBorder = WindowBorder.Fixed;
-
-                    window.Run();
-
-                    width = window.Width;
-                    height = window.Height;
-                    break;
-                case RenderTypes.P3D:
-                    break;
-                default:
-                    break;
-            }
-        }
-
+         
         public static void size(int width, int height)
         {
-            size(width, height, GDI);
+            size(width, height, true);
         }
-
-        public static float averageFramerate()
-        {
-            return (float)TotalFramerate / frameCount;
-        }
-
-        #region openGL
 
         private static void Window_Load(object sender, EventArgs e)
         {
-            GL.Enable(EnableCap.Texture2D);
             GL.Enable(EnableCap.Blend);
+            GL.Enable(EnableCap.Texture2D);
 
             GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
-            
-            Pixels = new Color[window.Width * window.Height];
 
             //zet het gebied waar de tekeningen in getekend kunnen worden
             GL.Viewport(0, 0, window.Width, window.Height);
             //zet de coordiaaten systeem (niet mogelijk in GL 4).
             SetOrthographicProjection();
+
+            img = new FastBitmapLib.FastBitmap(new Bitmap(width, height));
+
+            GL.BindTexture(TextureTarget.Texture2D, textureBuffer);
+            
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Clamp);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Clamp);
+
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
         }
 
         private static void Window_Resize(object sender, EventArgs e)
@@ -595,14 +601,37 @@ namespace CCreative
             GL.Viewport(0, 0, window.Width, window.Height);
             //zet de coordiaaten systeem (niet mogelijk in GL 4).
             SetOrthographicProjection();
+            mainFunctions.resize();
+
+            img.Resize(width, height);
         }
 
         private static void Window_Closed(object sender, EventArgs e)
         {
-            Environment.Exit(0);
+            framecount = 0;
+            noStroke();
+            noFill();
+            strokeWeight(1);
+
+            mainFunctions.Closed();
         }
 
-        static Matrix4 projectionMatrix;
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Resizes the current window by the given dimentions </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <param name="width">    The width of the display window in units of pixels. </param>
+        /// <param name="height">   The height of the display window in units of pixels. </param>
+
+        public static void resize(int width, int height)
+        {
+            window.Size = new Size(width, height);
+            GL.Viewport(0, 0, window.Width, window.Height);
+            pixels = new Color[(width * height)];
+        }
+
+        static  Matrix4 projectionMatrix;
         static Matrix4 modelViewMatrix;
         //static Vector3 cameraPosition;
         //static Vector3 cameraTarget;
@@ -623,8 +652,6 @@ namespace CCreative
             GL.MatrixMode(MatrixMode.Modelview);
             GL.LoadIdentity();
             GL.Ortho(0, window.Width, window.Height, 0, -1, 1);
-            width = window.Width;
-            height = window.Height;
         }
 
         private static void SetLookAtCamera(Vector3 position, Vector3 target, Vector3 up)
@@ -634,167 +661,6 @@ namespace CCreative
             GL.LoadMatrix(ref modelViewMatrix);
         }
 
-        #endregion
-
-        #region GDI
-
-        private static void Form_KeyUp(object sender, KeyEventArgs e)
-        {
-            mainFunctions.keyReleased();
-        }
-
-        private static void Form_MouseWheel(object sender, MouseEventArgs e)
-        {
-            mainFunctions.mouseWheel();
-        }
-
-        private static void Form_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.Escape)
-            {
-                Application.Exit();
-            }
-            else if (e.KeyCode == Keys.F5)
-            {
-                Application.Restart();
-            }
-
-            //else if (e.KeyCode == Keys.Pause)
-            //{
-            //    haveLoop = !haveLoop;
-
-            //    if (haveLoop)
-            //    {
-            //        loop();
-            //    }
-            //    else
-            //    {
-            //        noLoop();
-            //    }
-            //}
-            mainFunctions.keyPressed();
-        }
-
-        private static void Form_MouseLeave(object sender, EventArgs e)
-        {
-            //Cursor.Show();
-        }
-
-        private static void Form_MouseEnter(object sender, EventArgs e)
-        {
-            if (!General.cursor)
-            {
-                //Cursor.Hide();
-            }
-        }
-
-        private static void Form_MouseDown(object sender, MouseEventArgs e)
-        {
-            mouseUp = false;
-            mouseDown = true;
-        }
-
-        private static void Form_MouseUp(object sender, MouseEventArgs e)
-        {
-            mouseUp = true;
-            mouseDown = false;
-        }
-
-        private static void Form_Resize(object sender, EventArgs e)
-        {
-            Drawing.currentContext = BufferedGraphicsManager.Current;
-            myBuffer = currentContext.Allocate(form.CreateGraphics(),
-                form.DisplayRectangle);
-            GC.WaitForPendingFinalizers();
-            GC.Collect();
-
-            width = form.Width;
-            height = form.Height;
-        }
-
-        private static void Form_MouseMove(object sender, MouseEventArgs e)
-        {
-            tempX = e.X;
-            tempY = e.Y;
-            tempPos = e.Location;
-
-            if (pMouseX != tempX && pMouseY != tempY)
-            {
-                mainFunctions.mouseDragged();
-            }
-        }
-
-        private static void Form_MouseClick(object sender, MouseEventArgs e)
-        {
-            mainFunctions.mousePressed();
-        }
-
-        private static void Form_Load(object sender, EventArgs e)
-        {
-            //if (smoothing)
-            //{
-            //    smooth();
-            //}
-            //else
-            //{
-            //    noSmooth();
-            //}
-            mainFunctions.setup();
-        }
-
-        private static void Time_Tick(object sender, EventArgs e)
-        {
-            Watch.Restart();
-            Watch.Start();
-
-            framecount++;
-            frames++;
-
-            mouseX = tempX;
-            mouseY = tempY;
-            mousePos = tempPos;
-
-            //if (smoothing)
-            //{
-            //    smooth();
-            //}
-            //else
-            //{
-            //    noSmooth();
-            //}
-
-            mainFunctions.draw();
-
-            Drawing.myBuffer.Render();
-
-            pMouseX = mouseX;
-            pMouseY = mouseY;
-            pMousePos = mousePos;
-
-            if (Watch.ElapsedMilliseconds != 0)
-            {
-                //framerate = 1000 / Watch.ElapsedMilliseconds;
-            }
-            Watch.Stop();
-        }
-
-        #endregion
-
-        ///-------------------------------------------------------------------------------------------------
-        /// <summary>   Resizes the current window by the given dimentions </summary>
-        ///
-        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
-        ///
-        /// <param name="width">    The width of the display window in units of pixels. </param>
-        /// <param name="height">   The height of the display window in units of pixels. </param>
-
-        public static void resize(int width, int height)
-        {
-            window.Size = new Size(width, height);
-            GL.Viewport(0, 0, window.Width, window.Height);
-        }
-
-        
         public static void rotate(double degrees, double x, double y, double z)
         {
             GL.Rotate(degrees, x, y, z);
@@ -825,6 +691,91 @@ namespace CCreative
             {
                 window.VSync = VSyncMode.Off;
             }
+        }
+
+        public static void Title(string title)
+        {
+            window.Title = title;
+        }
+
+        public static void noLoop()
+        {
+            loop = false;
+            window.RenderFrame -= Window_RenderFrame;
+        }
+
+        public static void Loop()
+        {
+            loop = true;
+            window.RenderFrame += Window_RenderFrame;
+        }
+
+        public static void canResize(bool resizeable)
+        {
+            if (resizeable)
+            {
+                window.WindowBorder = WindowBorder.Resizable;
+            }
+            else
+            {
+                window.WindowBorder = WindowBorder.Fixed;
+            }
+        }
+
+        public static void thread(Action method)
+        {
+            new Thread(new ThreadStart(method)).Start();
+        }
+    }
+
+    class Camera2D
+    {
+        public enum DrawMode
+        {
+            Normal,
+            Wireframe
+        }
+
+        public float X { get; set; }
+        public float Y { get; set; }
+
+        public float Angle { get; set; }
+
+        private DrawMode _mode;
+        public DrawMode Mode
+        {
+            get { return _mode; }
+            set
+            {
+                _mode = value;
+                UpdateDrawMode();
+            }
+        }
+
+        public Camera2D(float x = 0.0f, float y = 0.0f)
+        {
+            X = x;
+            Y = y;
+            _mode = DrawMode.Normal;
+        }
+
+        private void UpdateDrawMode()
+        {
+            switch (_mode)
+            {
+                case DrawMode.Normal:
+                    GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
+                    break;
+                case DrawMode.Wireframe:
+                    GL.PolygonMode(MaterialFace.Front, PolygonMode.Line);
+                    break;
+            }
+        }
+
+        public void Update()
+        {
+            GL.Rotate(Angle, 0, 0, 1);
+            GL.Translate(-X, -Y, 0);
         }
     }
 }

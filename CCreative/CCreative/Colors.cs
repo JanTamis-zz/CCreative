@@ -131,7 +131,7 @@ namespace CCreative
 
         public static Color randomColor(byte min, byte max, byte transparancy)
         {
-            return Color.FromArgb(transparancy, floor(random(min, max)), floor(random(min, max)), floor(random(min, max)));
+            return Color.FromArgb(transparancy, randomInt(min, max + 1), randomInt(min, max + 1), randomInt(min, max + 1));
         }
 
         ///-------------------------------------------------------------------------------------------------
@@ -326,17 +326,20 @@ namespace CCreative
         public static Color color(int value)
         {
             Color clr = Color.Transparent;
-            if (colorMode() == colorModes.HSB)
-            {
-                value = value % 360;
-                clr = ColorTranslator.FromWin32(ColorHLSToRGB((int)map(value, 0, 360, 0, 240), 120, 240));
-            }
-            else if (colorMode() == colorModes.RGB)
-            {
-                value = (int)constrain(value, 0, 255);
-                clr = Color.FromArgb(255, value, value, value);
-            }
 
+            switch (colorMode())
+            {
+                case colorModes.RGB:
+                    value = (int)constrain(value, 0, 255);
+                    clr = Color.FromArgb(255, value, value, value);
+                    break;
+                case colorModes.HSB:
+                    value = (int)constrain(value, 0, 360);
+                    clr = ColorTranslator.FromWin32(ColorHLSToRGB((int)map(value, 0, 360, 0, 240), 120, 240));
+                    break;
+                default:
+                    break;
+            }
             return clr;
         }
 
@@ -354,15 +357,19 @@ namespace CCreative
         {
             Color clr = Color.Transparent;
 
-            if (colorMode() == colorModes.HSB)
+            switch (colorMode())
             {
-                value = value % 360;
-                clr = hueToColor(value);
-            }
-            else if (colorMode() == colorModes.RGB)
-            {
-                value = value % 255;
-                clr = Color.FromArgb(value, value, value);
+                case colorModes.RGB:
+                    value = (int)constrain(value, 0, 255);
+                    clr = Color.FromArgb(transparancy, value, value, value);
+                    break;
+                case colorModes.HSB:
+                    value = (int)constrain(value, 0, 360);
+                    clr = ColorTranslator.FromWin32(ColorHLSToRGB((int)map(value, 0, 360, 0, 240), 120, 240));
+                    clr = Color.FromArgb(transparancy, clr);
+                    break;
+                default:
+                    break;
             }
             clr = Color.FromArgb(transparancy, clr);
             return clr;

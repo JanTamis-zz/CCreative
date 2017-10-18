@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using static CCreative.Math;
 
 namespace CCreative
 {
@@ -226,6 +227,36 @@ namespace CCreative
             }
         }
 
+        public void setSeed(double seed)
+        {
+            perm = new byte[256];
+            perm2D = new byte[256];
+            perm3D = new byte[256];
+            perm4D = new byte[256];
+            var source = new byte[256];
+            for (int i = 0; i < 256; i++)
+            {
+                source[i] = (byte)i;
+            }
+            seed = seed * 6364136223846793005L + 1442695040888963407L;
+            seed = seed * 6364136223846793005L + 1442695040888963407L;
+            seed = seed * 6364136223846793005L + 1442695040888963407L;
+            for (int i = 255; i >= 0; i--)
+            {
+                seed = seed * 6364136223846793005L + 1442695040888963407L;
+                int r = (int)((seed + 31) % (i + 1));
+                if (r < 0)
+                {
+                    r += (i + 1);
+                }
+                perm[i] = source[r];
+                perm2D[i] = (byte)(perm[i] & 0x0E);
+                perm3D[i] = (byte)((perm[i] % 24) * 3);
+                perm4D[i] = (byte)(perm[i] & 0xFC);
+                source[r] = source[i];
+            }
+        }
+
         public double Evaluate(double x, double y)
         {
             var stretchOffset = (x + y) * STRETCH_2D;
@@ -271,7 +302,7 @@ namespace CCreative
                 }
                 c = c.Next;
             }
-            return value * NORM_2D;
+            return norm((value * NORM_2D), -1, 1);
         }
 
         public double Evaluate(double x, double y, double z)
@@ -329,7 +360,8 @@ namespace CCreative
 
                 c = c.Next;
             }
-            return value * NORM_3D;
+            //return ((value * NORM_3D) + 1 * 0.5);
+            return norm(value * NORM_3D, -1, 1);
         }
 
         public double Evaluate(double x, double y, double z, double w)

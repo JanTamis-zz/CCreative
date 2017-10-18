@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OpenTK.Platform.Windows;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -14,8 +15,10 @@ namespace CCreative
     {
         static Random rand = new Random();
 
-        static Perlin Noise = new Perlin();
-        //static OpenSimplexNoise Noise = new OpenSimplexNoise((long)random(long.MaxValue))
+        //static Perlin Noise = new Perlin();
+
+        static OpenSimplexNoise Noise = new OpenSimplexNoise();
+        //static OpenSimplexNoise Noise = new OpenSimplexNoise((long)random(long.MaxValue));
 
         public static readonly float HALF_PI = (float)(System.Math.PI * 0.5);
         public static readonly float PI = (float)System.Math.PI;
@@ -23,6 +26,10 @@ namespace CCreative
         public static readonly float TAU = (float)(System.Math.PI * 2);
         public static readonly float TWO_PI = (float)(System.Math.PI * 2);
         public static readonly float Infinity = float.PositiveInfinity;
+
+        static int octaves = 1;
+        static double persistence = 0.5;
+        static double lacunarity = 2;
 
         #region Calculations
 
@@ -49,9 +56,9 @@ namespace CCreative
         ///
         /// <returns>   The ceiling. </returns>
 
-        public static float ceil(double number)
+        public static int ceil(double number)
         {
-            return (float)System.Math.Ceiling((decimal)number);
+            return floor(number + 1);
         }
 
         ///-------------------------------------------------------------------------------------------------
@@ -92,9 +99,7 @@ namespace CCreative
         ///
         /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
         ///
-        /// <param name="beginPoint">   The begin point. </param>
-        /// <param name="endPoint">     The end point. </param>
-        ///
+        /// <param name="points">   The points tot est the distance with. </param>
         /// <returns>   The distance. </returns>
 
         public static float dist(PointF[] points)
@@ -149,7 +154,7 @@ namespace CCreative
 
         public static int floor(double number)
         {
-            return (int)(System.Math.Floor(number));
+            return (number >= 0 ? (int)number : (int)number - 1);
         }
 
         ///-------------------------------------------------------------------------------------------------
@@ -165,8 +170,7 @@ namespace CCreative
 
         public static float lerp(double start, double stop, double atm)
         {
-            if (atm > 1) { atm = 1; }
-            else if (atm < 0) { atm = 0; }
+            atm = constrain(atm, 0, 1);
 
             return (float)((1 - atm) * start + atm * stop);
         }
@@ -282,7 +286,7 @@ namespace CCreative
 
         public static float norm(double value, double start, double stop)
         {
-            return map(value, start, stop, 0, 1);
+            return (float)((value - start) / (stop - start));
         }
 
         ///-------------------------------------------------------------------------------------------------
@@ -295,9 +299,16 @@ namespace CCreative
         ///
         /// <returns>   The value. </returns>
 
-        public static float pow(double number, double power)
+        public static float pow(double number, int power)
         {
-            return (float)System.Math.Pow(number, power);
+            //return (float)(power == 1 ? number : pow(number * number, --power));
+            //return (float)System.Math.Pow(number, power);
+
+            double res = number;
+            for (int i = 1; i < power; i++)
+                res *= number;
+            return (float)res;
+
         }
 
         ///-------------------------------------------------------------------------------------------------
@@ -311,7 +322,7 @@ namespace CCreative
 
         public static int round(double number)
         {
-            return (int)(System.Math.Round(number));
+            return floor(number + 0.5);
         }
 
         ///-------------------------------------------------------------------------------------------------
@@ -357,7 +368,22 @@ namespace CCreative
 
         public static float noise(double x)
         {
-            return constrain(Noise.perlin(x, 0, 0), 0, 1);
+            double total = 0;
+            double frequency = 1;
+            double amplitude = 1;
+            double maxValue = 0;            // Used for normalizing result to 0.0 - 1.0
+
+            for (int i = 0; i < octaves; i++)
+            {
+                total += (Noise.Evaluate(x * frequency, 0)) * amplitude;
+
+                maxValue += amplitude;
+
+                amplitude *= persistence;
+                frequency *= lacunarity;
+            }
+
+            return (float)(total / maxValue);
         }
 
         ///-------------------------------------------------------------------------------------------------
@@ -372,7 +398,22 @@ namespace CCreative
 
         public static float noise(double x, double y)
         {
-            return (float)Noise.perlin(x, y, 0);
+            double total = 0;
+            double frequency = 1;
+            double amplitude = 1;
+            double maxValue = 0;            // Used for normalizing result to 0.0 - 1.0
+
+            for (int i = 0; i < octaves; i++)
+            {
+                total += (Noise.Evaluate(x * frequency, y * frequency)) * amplitude;
+
+                maxValue += amplitude;
+
+                amplitude *= persistence;
+                frequency *= lacunarity;
+            }
+
+            return (float)(total / maxValue);
         }
 
         ///-------------------------------------------------------------------------------------------------
@@ -388,7 +429,22 @@ namespace CCreative
 
         public static float noise(double x, double y, double z)
         {
-            return (float)(Noise.perlin(x, y, z));
+            double total = 0;
+            double frequency = 1;
+            double amplitude = 1;
+            double maxValue = 0;            // Used for normalizing result to 0.0 - 1.0
+
+            for (int i = 0; i < octaves; i++)
+            {
+                total += (Noise.Evaluate(x * frequency, y * frequency, z * frequency)) * amplitude;
+
+                maxValue += amplitude;
+
+                amplitude *= persistence;
+                frequency *= lacunarity;
+            }
+
+            return (float)(total / maxValue);
         }
 
         ///-------------------------------------------------------------------------------------------------
@@ -398,9 +454,27 @@ namespace CCreative
         ///
         /// <param name="Seed"> The seed value. </param>
 
-        public static void noiseSeed(int Seed)
+        public static void noiseSeed(double Seed)
         {
-            Noise.SetSeed(Seed);
+            Noise.setSeed(Seed);
+        }
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Adjusts the character and level of detail produced by the Perlin noise function. </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <param name="Detail">   The detail of the noise function (a value between 1 and 30). </param>
+
+        public static void noiseDetail(int Detail)
+        {
+            Detail = round(constrain(Detail, 1, 30));
+            //octaves = round(Detail);
+            //persistence = constrain(Detail / 5, 0.2, 3);
+
+            octaves = Detail;
+
+            //fastNoise.SetFractalOctaves((int)Detail);
         }
 
         ///-------------------------------------------------------------------------------------------------
@@ -409,168 +483,21 @@ namespace CCreative
         /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
         ///
         /// <param name="Detail">   Number of octaves to be used by the noise. </param>
+        /// <param name="Persistence">   The persistence to use. </param>
 
-        public static void noiseDetail(int Detail)
+        public static void noiseDetail(int Detail, double Persistence, double Lacunarity)
         {
-            //Noise.SetFractalOctaves(Detail);
+            octaves = Detail;
+            persistence = Persistence;
+            lacunarity = Lacunarity;
         }
 
-        public class Perlin
+        public static Color whiteNoise()
         {
-
-            public int repeat;
-
-            private double seed = random(double.MaxValue);
-
-            public Perlin(int repeat = -1)
-            {
-                this.repeat = repeat;
-            }
-
-            public double OctavePerlin(double x, double y, double z, int octaves, double persistence)
-            {
-                double total = 0;
-                double frequency = 1;
-                double amplitude = 1;
-                double maxValue = 0;            // Used for normalizing result to 0.0 - 1.0
-                for (int i = 0; i < octaves; i++)
-                {
-                    total += perlin(x * frequency, y * frequency, z * frequency) * amplitude;
-
-                    maxValue += amplitude;
-
-                    amplitude *= persistence;
-                    frequency *= 2;
-                }
-
-                return total / maxValue;
-            }
-
-            private static readonly int[] permutation = { 151,160,137,91,90,15,					// Hash lookup table as defined by Ken Perlin.  This is a randomly
-		        131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,	// arranged array of all numbers from 0-255 inclusive.
-		        190, 6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,
-                88,237,149,56,87,174,20,125,136,171,168, 68,175,74,165,71,134,139,48,27,166,
-                77,146,158,231,83,111,229,122,60,211,133,230,220,105,92,41,55,46,245,40,244,
-                102,143,54, 65,25,63,161, 1,216,80,73,209,76,132,187,208, 89,18,169,200,196,
-                135,130,116,188,159,86,164,100,109,198,173,186, 3,64,52,217,226,250,124,123,
-                5,202,38,147,118,126,255,82,85,212,207,206,59,227,47,16,58,17,182,189,28,42,
-                223,183,170,213,119,248,152, 2,44,154,163, 70,221,153,101,155,167, 43,172,9,
-                129,22,39,253, 19,98,108,110,79,113,224,232,178,185, 112,104,218,246,97,228,
-                251,34,242,193,238,210,144,12,191,179,162,241, 81,51,145,235,249,14,239,107,
-                49,192,214, 31,181,199,106,157,184, 84,204,176,115,121,50,45,127, 4,150,254,
-                138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180
-            };
-
-            private static readonly int[] p;                                                    // Doubled permutation to avoid overflow
-
-            static Perlin()
-            {
-                p = new int[512];
-                for (int x = 0; x < 512; x++)
-                {
-                    p[x] = permutation[x % 256];
-                }
-            }
-
-            public void SetSeed(double seed)
-            {
-                this.seed = seed;
-            }
-
-            public double perlin(double x, double y, double z)
-            {
-                //x += seed;
-                //y += seed;
-                //z += seed;
-
-                if (repeat > 0)
-                {                                   // If we have any repeat on, change the coordinates to their "local" repetitions
-                    x = x % repeat;
-                    y = y % repeat;
-                    z = z % repeat;
-                }
-
-                int xi = (int)x & 255;                              // Calculate the "unit cube" that the point asked will be located in
-                int yi = (int)y & 255;                              // The left bound is ( |_x_|,|_y_|,|_z_| ) and the right bound is that
-                int zi = (int)z & 255;                              // plus 1.  Next we calculate the location (from 0.0 to 1.0) in that cube.
-                double xf = x - (int)x;                             // We also fade the location to smooth the result.
-                double yf = y - (int)y;
-
-                double zf = z - (int)z;
-                double u = fade(xf);
-                double v = fade(yf);
-                double w = fade(zf);
-
-                int aaa, aba, aab, abb, baa, bba, bab, bbb;
-                aaa = p[p[p[xi] + yi] + zi];
-                aba = p[p[p[xi] + inc(yi)] + zi];
-                aab = p[p[p[xi] + yi] + inc(zi)];
-                abb = p[p[p[xi] + inc(yi)] + inc(zi)];
-                baa = p[p[p[inc(xi)] + yi] + zi];
-                bba = p[p[p[inc(xi)] + inc(yi)] + zi];
-                bab = p[p[p[inc(xi)] + yi] + inc(zi)];
-                bbb = p[p[p[inc(xi)] + inc(yi)] + inc(zi)];
-
-                double x1, x2, y1, y2;
-                x1 = lerp(grad(aaa, xf, yf, zf),                // The gradient function calculates the dot product between a pseudorandom
-                            grad(baa, xf - 1, yf, zf),              // gradient vector and the vector from the input coordinate to the 8
-                            u);                                     // surrounding points in its unit cube.
-                x2 = lerp(grad(aba, xf, yf - 1, zf),                // This is all then lerped together as a sort of weighted average based on the faded (u,v,w)
-                            grad(bba, xf - 1, yf - 1, zf),              // values we made earlier.
-                              u);
-                y1 = lerp(x1, x2, v);
-
-                x1 = lerp(grad(aab, xf, yf, zf - 1),
-                            grad(bab, xf - 1, yf, zf - 1),
-                            u);
-                x2 = lerp(grad(abb, xf, yf - 1, zf - 1),
-                              grad(bbb, xf - 1, yf - 1, zf - 1),
-                              u);
-                y2 = lerp(x1, x2, v);
-
-                return (lerp(y1, y2, w) + 1) / 2;                       // For convenience we bound it to 0 - 1 (theoretical min/max before is -1 - 1)
-            }
-
-            public int inc(int num)
-            {
-                num++;
-                if (repeat > 0) num %= repeat;
-
-                return num;
-            }
-
-            public static double grad(int hash, double x, double y, double z)
-            {
-                int h = hash & 15;                                  // Take the hashed value and take the first 4 bits of it (15 == 0b1111)
-                double u = h < 8 /* 0b1000 */ ? x : y;              // If the most significant bit (MSB) of the hash is 0 then set u = x.  Otherwise y.
-
-                double v;                                           // In Ken Perlin's original implementation this was another conditional operator (?:).  I
-                                                                    // expanded it for readability.
-
-                if (h < 4 /* 0b0100 */)                             // If the first and second significant bits are 0 set v = y
-                    v = y;
-                else if (h == 12 /* 0b1100 */ || h == 14 /* 0b1110*/)// If the first and second significant bits are 1 set v = x
-                    v = x;
-                else                                                // If the first and second significant bits are not equal (0/1, 1/0) set v = z
-                    v = z;
-
-                return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v); // Use the last 2 bits to decide if u and v are positive or negative.  Then return their addition.
-            }
-
-            public static double fade(double t)
-            {
-                // Fade function as defined by Ken Perlin.  This eases coordinate values
-                // so that they will "ease" towards integral values.  This ends up smoothing
-                // the final output.
-                return t * t * t * (t * (t * 6 - 15) + 10);         // 6t^5 - 15t^4 + 10t^3
-            }
-
-            public static double lerp(double a, double b, double x)
-            {
-                return a + x * (b - a);
-            }
+            int randomVal = randomInt(0, 256);
+            return Color.FromArgb(randomVal, randomVal, randomVal);
         }
-
+        
         #endregion
 
         #region Trigonometry
@@ -711,7 +638,6 @@ namespace CCreative
         ///
         /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
         ///
-        /// <param name="StartPosition">    The start position. </param>
         /// <param name="angle">            The angle. </param>
         /// <param name="radius">           The radius. </param>
         ///
@@ -856,10 +782,21 @@ namespace CCreative
         ///
         /// <returns>   A random point. </returns>
 
-        public static System.Drawing.PointF randomPoint()
+        public static System.Drawing.PointF randomPointF()
         {
-            Random rand = new Random();
-            return new System.Drawing.PointF(map((float)rand.NextDouble(), 0, 1, 0, width), map((float)rand.NextDouble(), 0, 1, 0, height));
+            return new PointF(random(width), random(height));
+        }
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Returns a random Point </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <returns>   A random point. </returns>
+
+        public static System.Drawing.Point randomPoint()
+        {
+            return new System.Drawing.Point(randomInt(width + 1), randomInt(height + 1));
         }
 
         ///-------------------------------------------------------------------------------------------------
@@ -996,13 +933,13 @@ namespace CCreative
         ///
         /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
         ///
-        /// <param name="max">  the upper bound (exclusive). </param>
+        /// <param name="value">  the upper bound (exclusive). </param>
         ///
         /// <returns>   System.Single. </returns>
 
         public static float random(double value)
         {
-            return random(0, value);
+            return (float)(rand.NextDouble() * (value - 0.000000000000001));
         }
 
         ///-------------------------------------------------------------------------------------------------
@@ -1014,8 +951,50 @@ namespace CCreative
 
         public static float random()
         {
-            return random(0, 1);
+            return (float)rand.NextDouble();
         }
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Return a random int number. </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <param name="min">  The lower bound (inclusive). </param>
+        /// <param name="max">  the upper bound (exclusive). </param>
+        ///
+        /// <returns>   System.Single. </returns>
+
+        public static int randomInt(int min, int max)
+        {
+            return rand.Next(min, max);
+        }
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Return a random int number. </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <param name="value">  the upper bound (exclusive). </param>
+        ///
+        /// <returns>   System.Single. </returns>
+
+        public static int randomInt(int value)
+        {
+            return rand.Next(value);
+        }
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>   Return a random byte number. </summary>
+        ///
+        /// <remarks>   Jan Tamis, 29-8-2017. </remarks>
+        ///
+        /// <returns>   System.Single. </returns>
+
+        public static byte randomByte()
+        {
+            return (byte)rand.Next(byte.MaxValue + 1);
+        }
+
 
         ///-------------------------------------------------------------------------------------------------
         /// <summary>   Returns a random number fitting a Gaussian, or normal, distribution. There is theoretically no minimum or maximum value that randomGaussian() might return.  </summary>
@@ -1129,6 +1108,243 @@ namespace CCreative
             return (float)a;
         }
 
+        public static T[] shuffle<T>(T[] array)
+        {
+            T[] temp = new T[array.Length];
+            int n = array.Length;
+            while (n > 1)
+            {
+                int k = round(random(n--));
+                T tempT = temp[n];
+                temp[n] = temp[k];
+                temp[k] = tempT;
+            }
+            return temp;
+        }
+
+        public static void shuffle<T>(T[][] array)
+        {
+            for (int i = 0; i < array.Length; i++)
+            {
+                int n = array.Length;
+                while (n > 1)
+                {
+                    int k = round(random(n--));
+                    T temp = array[i][n];
+                    array[i][n] = array[i][k];
+                    array[i][k] = temp;
+                } 
+            }
+        }
+
         #endregion
+    }
+}
+
+namespace ExtensionMethods
+{
+    using static CCreative.Math;
+    using System.Linq;
+
+    public static class Extensions
+    {
+        public static int constrain(this int number, double low, double high)
+        {
+            if (number > high) { number = (int)high; }
+            else if (number < low) { number = (int)low; }
+            return number;
+        }
+
+        public static float constrain(this float number, double low, double high)
+        {
+            if (number > high) { number = (float)high; }
+            else if (number < low) { number = (float)low; }
+            return number;
+        }
+
+        public static double constrain(this double number, double low, double high)
+        {
+            if (number > high) { number = high; }
+            else if (number < low) { number = low; }
+            return number;
+        }
+
+        public static int map(this int value, double least, double max, double toMinimum, double toMaximum)
+        {
+            return (int)((toMinimum + value - least) * (toMaximum - toMinimum) / (max - least));
+        }
+
+        public static float map(this float value, double least, double max, double toMinimum, double toMaximum)
+        {
+            return (float)((toMinimum + value - least) * (toMaximum - toMinimum) / (max - least));
+        }
+
+        public static double map(this double value, double least, double max, double toMinimum, double toMaximum)
+        {
+            return (toMinimum + value - least) * (toMaximum - toMinimum) / (max - least);
+        }
+
+        public static int floor(this float value)
+        {
+            return (int)value;
+        }
+
+        public static int floor(this double value)
+        {
+            return (int)value;
+        }
+
+        public static int round(this float value)
+        {
+            return (int)(value + 0.5);
+        }
+
+        public static int round(this double value)
+        {
+            return (int)(value + 0.5);
+        }
+
+        public static int ceil(this float value)
+        {
+            return (int)(value + 1);
+        }
+
+        public static int ceil(this double value)
+        {
+            return (int)(value + 1);
+        }
+
+        public static T[] shuffle<T>(T[] array)
+        {
+            int n = array.Length;
+            while (n > 1)
+            {
+                int k = round(random(n--));
+                T temp = array[n];
+                array[n] = array[k];
+                array[k] = temp;
+            }
+            return array;
+        }
+
+        public static T[] Slice<T>(this T[] source, int start, int end)
+        {
+            // Handles negative ends.
+            if (end < 0)
+            {
+                end = source.Length + end;
+            }
+            int len = end - start;
+
+            // Return new array.
+            T[] res = new T[len];
+            for (int i = 0; i < len; i++)
+            {
+                res[i] = source[i + start];
+            }
+            return res;
+        }
+
+        public static T[] push<T>(this T[] source, T toAdd)
+        {
+            source.ToList().Add(toAdd);
+            return source.ToArray();
+        }
+
+        public static bool includes<T>(this T[] source, T toCheck)
+        {
+            return Array.IndexOf(source, toCheck) != -1;
+        }
+
+        public static bool collideRectCircle(double rx, double ry, double rw, double rh, double cx, double cy, double diameter)
+        {
+            double testX = cx;
+            double testY = cy;
+
+            if (cx < rx)
+                testX = rx;       // left edge
+            else if (cx > rx + rw)
+                testX = rx + rw;   // right edge
+
+            if (cy < ry)
+                testY = ry;       // top edge
+            else if (cy > ry + rh)
+                testY = ry + rh;   // bottom edge
+
+            double distance = dist(cx, cy, testX, testY);
+
+            return distance <= diameter / 2;
+        }
+
+        public static bool collideCircleCircle(double x, double y, double d, double x2, double y2, double d2)
+        {
+            return dist(x, y, x2, y2) <= (d / 2) + (d2 / 2);
+        }
+
+        public static bool collidePointCircle(double x, double y, double cx, double cy, double d)
+        {
+            return dist(x, y, cx, cy) <= d / 2;
+        }
+
+        public static bool collidePointRect(double pointX, double pointY, double x, double y, double xW, double yW)
+        {
+            return pointX >= x &&         // right of the left edge AND
+                pointX <= x + xW &&    // left of the right edge AND
+                pointY >= y &&         // below the top AND
+                pointY <= y + yW;    // above the bottom
+        }
+
+        public static bool collideLineCircle(double x1, double y1, double x2, double y2, double cx, double cy, double diameter)
+        {
+            bool inside1 = collidePointCircle(x1, y1, cx, cy, diameter);
+            bool inside2 = collidePointCircle(x2, y2, cx, cy, diameter);
+            if (inside1 || inside2) return true;
+
+            // get length of the line
+            double distX = x1 - x2;
+            double distY = y1 - y2;
+            double len = sqrt((distX * distX) + (distY * distY));
+
+            // get dot product of the line and circle
+            double dot = (((cx - x1) * (x2 - x1)) + ((cy - y1) * (y2 - y1))) / pow(len, 2);
+
+            // find the closest point on the line
+            double closestX = x1 + (dot * (x2 - x1));
+            double closestY = y1 + (dot * (y2 - y1));
+
+            // is this point actually on the line segment?
+            // if so keep going, but if not, return false
+            bool onSegment = collidePointLine(closestX, closestY, x1, y1, x2, y2, 0.1);
+            if (!onSegment) return false;
+
+
+            // get distance to closest point
+            distX = closestX - cx;
+            distY = closestY - cy;
+            double distance = sqrt((distX * distX) + (distY * distY));
+
+            return distance <= diameter / 2;
+        }
+
+        public static bool collidePointLine(double px, double py, double x1, double y1, double x2, double y2, double buffer)
+        {
+            double d1 = dist(px, py, x1, y1);
+            double d2 = dist(px, py, x2, y2);
+
+            // get the length of the line
+            double lineLen = dist(x1, y1, x2, y2);
+
+            // if the two distances are equal to the line's length, the point is on the line!
+            // note we use the buffer here to give a range, rather than one #
+            return d1 + d2 >= lineLen - buffer && d1 + d2 <= lineLen + buffer;
+        }
+
+        public static bool collideLineLine(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4)
+        {
+            double uA = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / ((y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1));
+            double uB = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / ((y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1));
+
+            return (uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1);
+        }
     }
 }

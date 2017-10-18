@@ -16,7 +16,7 @@ namespace CCreative
     (at your option) any later version.
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
     GNU General Public License for more details.
     You should have received a copy of the GNU General Public License along
     with this program; if not, write to the Free Software Foundation, Inc.,
@@ -45,7 +45,7 @@ namespace CCreative
             /// <summary>
             /// The Bitmap object encapsulated on this FastBitmap
             /// </summary>
-            private readonly Bitmap _bitmap;
+            public static Bitmap _bitmap;
 
             /// <summary>
             /// The BitmapData resulted from the lock operation
@@ -60,12 +60,12 @@ namespace CCreative
             /// <summary>
             /// Gets the width of this FastBitmap object
             /// </summary>
-            public int Width { get; }
+            public int Width { get; private set; }
 
             /// <summary>
             /// Gets the height of this FastBitmap object
             /// </summary>
-            public int Height { get; }
+            public int Height { get; private set; }
 
             /// <summary>
             /// Gets the pointer to the first pixel of the bitmap
@@ -99,7 +99,7 @@ namespace CCreative
                     }
 
                     // Declare an array to hold the bytes of the bitmap
-                    int bytes = (int)Math.abs(_bitmapData.Stride) * _bitmap.Height;
+                    int bytes = (int)(Math.abs(_bitmapData.Stride) * _bitmap.Height);
                     int[] argbValues = new int[bytes / BytesPerPixel];
 
                     // Copy the RGB values into the array
@@ -160,7 +160,7 @@ namespace CCreative
                     throw new InvalidOperationException("Unlock must be called before a Lock operation");
                 }
 
-                return Lock(ImageLockMode.ReadWrite);
+                return Lock(ImageLockMode.WriteOnly);
             }
 
             /// <summary>
@@ -574,6 +574,19 @@ namespace CCreative
                 {
                     fb.Clear(color);
                 }
+            }
+
+            /// <summary>
+            /// Resizes the image
+            /// </summary>
+            /// <param name="width">The new width</param>
+            /// <param name="height">The new height</param>
+            public void Resize(int width, int height)
+            {
+                _bitmap = new Bitmap(_bitmap, width, height);
+                Width = _bitmap.Width;
+                Height = _bitmap.Height;
+
             }
 
             /// <summary>

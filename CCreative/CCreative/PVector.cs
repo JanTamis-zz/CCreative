@@ -150,8 +150,10 @@ namespace CCreative
 
         public PVector random2D()
         {
-            x = map(random(-100, 100), -100, 100, -1, 1);
-            y = map(random(-100, 100), -100, 100, -1, 1);
+            x = random(float.MinValue, float.MaxValue);
+            y = random(float.MinValue, float.MaxValue);
+
+            normalize();
 
             return this;
         }
@@ -165,11 +167,10 @@ namespace CCreative
 
         public PVector random3D()
         {
-            x = map(random(-100, 100), -100, 100, -1, 1);
-            y = map(random(-100, 100), -100, 100, -1, 1);
-            z = map(random(-100, 100), -100, 100, -1, 1);
+            x = random(float.MinValue, float.MaxValue);
+            y = random(float.MinValue, float.MaxValue);
+            z = random(float.MinValue, float.MaxValue);
             
-
             return this;
         }
 
@@ -187,7 +188,7 @@ namespace CCreative
 
         public PVector normalize()
         {
-            float size = this.mag();
+            float size = mag();
 
             x = x / size;
             y = y / size;
@@ -573,7 +574,7 @@ namespace CCreative
 
         public float mag()
         {
-            return (float)System.Math.Sqrt(x * x + y * y + z * z);
+            return sqrt(x * x + y * y + z * z);
         }
 
         ///-------------------------------------------------------------------------------------------------

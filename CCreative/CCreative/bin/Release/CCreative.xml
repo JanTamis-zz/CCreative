@@ -229,6 +229,13 @@
             <param name="bitmap">The bitmap to clear</param>
             <param name="color">The color to clear the bitmap with</param>
         </member>
+        <member name="M:CCreative.FastBitmapLib.FastBitmap.Resize(System.Int32,System.Int32)">
+            <summary>
+            Resizes the image
+            </summary>
+            <param name="width">The new width</param>
+            <param name="height">The new height</param>
+        </member>
         <member name="M:CCreative.FastBitmapLib.FastBitmap.CopyRegion(System.Drawing.Bitmap,System.Drawing.Bitmap,System.Drawing.Rectangle,System.Drawing.Rectangle)">
             <summary>
             Copies a region of the source bitmap to a target bitmap
@@ -326,10 +333,8 @@
              <summary>   The keyPressed() function is called once every time a key is pressed. </summary>
             
              <remarks>   Jan Tamis, 29-8-2017. </remarks>
-            
-             <param name="e">    Keyboard key event information. </param>
         </member>
-        <member name="M:CCreative.Function.mouseDragged">
+        <member name="M:CCreative.Function.mouseDragged(OpenTK.Input.MouseMoveEventArgs)">
             -------------------------------------------------------------------------------------------------
              <summary>   The mouseDragged() function is called once every time the mouse moves. </summary>
             
@@ -337,13 +342,22 @@
             
              <param name="e">    Mouse move event information. </param>
         </member>
-        <member name="M:CCreative.Function.mouseWheel">
+        <member name="M:CCreative.Function.mouseWheel(OpenTK.Input.MouseWheelEventArgs)">
             -------------------------------------------------------------------------------------------------
              <summary>   The function mouseWheel() is executed every time a vertical mouse wheel event is detected either triggered by an actual mouse wheel or by a touchpad. </summary>
             
              <remarks>   Jan Tamis, 29-8-2017. </remarks>
             
              <param name="e">    Mouse wheel event information. </param>
+        </member>
+        <member name="M:CCreative.General.init(System.Windows.Forms.Form,CCreative.Function)">
+            -------------------------------------------------------------------------------------------------
+             <summary>   Initializes the CCreative library. </summary>
+            
+             <remarks>   Jan Tamis, 29-8-2017. </remarks>
+            
+             <param name="form">         The form to use. </param>
+             <param name="functions">    The functions class that holds the functions. </param>
         </member>
         <member name="M:CCreative.General.timerInterval(System.Int32)">
             -------------------------------------------------------------------------------------------------
@@ -403,16 +417,6 @@
             
              <remarks>   Jan Tamis, 29-8-2017. </remarks>
         </member>
-        <member name="M:CCreative.General.delay(System.Int32)">
-            -------------------------------------------------------------------------------------------------
-             <summary>   Delays the program to do furder actions during the given time. </summary>
-            
-             <remarks>   Jan Tamis, 29-8-2017. </remarks>
-            
-             <param name="milliseconds"> The milliseconds. </param>
-            
-             <returns>   An int. </returns>
-        </member>
         <member name="M:CCreative.General.print``1(``0)">
             -------------------------------------------------------------------------------------------------
              <summary>   The print() function writes to the console area. </summary>
@@ -453,7 +457,7 @@
              <param name="height">   The height of the display window in units of pixels. </param>
              <param name="highQuality">   Determents if the drawings are in high quality. </param>
         </member>
-        <member name="M:CCreative.General.size(System.Int32,System.Int32,CCreative.General.RenderTypes)">
+        <member name="M:CCreative.General.size(System.Int32,System.Int32)">
             -------------------------------------------------------------------------------------------------
              <summary>   Defines the dimension of the display window width and height in units of pixels. </summary>
             
@@ -461,7 +465,6 @@
             
              <param name="width">    The width of the display window in units of pixels. </param>
              <param name="height">   The height of the display window in units of pixels. </param>
-             <param name="renderer">   The renderer to use. </param>
         </member>
         <member name="M:CCreative.General.resize(System.Int32,System.Int32)">
             -------------------------------------------------------------------------------------------------
@@ -1199,24 +1202,6 @@
              <param name="text">     the alphanumeric symbols to be displayed. </param>
              <param name="point">    The location. </param>
         </member>
-        <member name="M:CCreative.Drawing.drawFramerate">
-            -------------------------------------------------------------------------------------------------
-             <summary>   Show the FrameRate from the window into the statusbar. </summary>
-            
-             <remarks>   Jan Tamis, 27-8-2017. </remarks>
-        </member>
-        <member name="M:CCreative.Drawing.drawTotalTime">
-            -------------------------------------------------------------------------------------------------
-             <summary>   Shows the total time that the program is running into the status bar </summary>
-            
-             <remarks>   Jan Tamis, 27-8-2017. </remarks>
-        </member>
-        <member name="M:CCreative.Drawing.drawAverageFramerate">
-            -------------------------------------------------------------------------------------------------
-             <summary>   Shows the average framerate into the status bar </summary>
-            
-             <remarks>   Jan Tamis, 27-8-2017. </remarks>
-        </member>
         <member name="M:CCreative.Drawing.textSize(System.Double)">
             -------------------------------------------------------------------------------------------------
              <summary>   Sets the fontsize for the Text() method. </summary>
@@ -1372,9 +1357,7 @@
             
              <remarks>   Jan Tamis, 29-8-2017. </remarks>
             
-             <param name="beginPoint">   The begin point. </param>
-             <param name="endPoint">     The end point. </param>
-            
+             <param name="points">   The points tot est the distance with. </param>
              <returns>   The distance. </returns>
         </member>
         <member name="M:CCreative.Math.dist(System.Double,System.Double,System.Double,System.Double)">
@@ -1489,7 +1472,7 @@
             
              <returns>   The normalized value. </returns>
         </member>
-        <member name="M:CCreative.Math.pow(System.Double,System.Double)">
+        <member name="M:CCreative.Math.pow(System.Double,System.Int32)">
             -------------------------------------------------------------------------------------------------
              <summary>   Facilitates exponential expressions. </summary>
             
@@ -1563,7 +1546,7 @@
             
              <returns>   The noise value. </returns>
         </member>
-        <member name="M:CCreative.Math.noiseSeed(System.Int32)">
+        <member name="M:CCreative.Math.noiseSeed(System.Double)">
             -------------------------------------------------------------------------------------------------
              <summary>   Sets the seed value for noise(). </summary>
             
@@ -1577,7 +1560,16 @@
             
              <remarks>   Jan Tamis, 29-8-2017. </remarks>
             
+             <param name="Detail">   The detail of the noise function (a value between 1 and 30). </param>
+        </member>
+        <member name="M:CCreative.Math.noiseDetail(System.Int32,System.Double,System.Double)">
+            -------------------------------------------------------------------------------------------------
+             <summary>   Adjusts the character and level of detail produced by the Perlin noise function. </summary>
+            
+             <remarks>   Jan Tamis, 29-8-2017. </remarks>
+            
              <param name="Detail">   Number of octaves to be used by the noise. </param>
+             <param name="Persistence">   The persistence to use. </param>
         </member>
         <member name="M:CCreative.Math.acos(System.Double)">
             -------------------------------------------------------------------------------------------------
@@ -1676,7 +1668,6 @@
             
              <remarks>   Jan Tamis, 29-8-2017. </remarks>
             
-             <param name="StartPosition">    The start position. </param>
              <param name="angle">            The angle. </param>
              <param name="radius">           The radius. </param>
             
@@ -1718,6 +1709,14 @@
              <param name="bmp">  The bitmap to check. </param>
             
              <returns>   The dominant color. </returns>
+        </member>
+        <member name="M:CCreative.Math.randomPointF">
+            -------------------------------------------------------------------------------------------------
+             <summary>   Returns a random Point </summary>
+            
+             <remarks>   Jan Tamis, 29-8-2017. </remarks>
+            
+             <returns>   A random point. </returns>
         </member>
         <member name="M:CCreative.Math.randomPoint">
             -------------------------------------------------------------------------------------------------
@@ -1818,7 +1817,7 @@
             
              <remarks>   Jan Tamis, 29-8-2017. </remarks>
             
-             <param name="max">  the upper bound (exclusive). </param>
+             <param name="value">  the upper bound (exclusive). </param>
             
              <returns>   System.Single. </returns>
         </member>
@@ -1829,6 +1828,35 @@
              <remarks>   Jan Tamis, 29-8-2017. </remarks>
             
              <returns>   A random floating-point number between 0 and 1. </returns>
+        </member>
+        <member name="M:CCreative.Math.randomInt(System.Int32,System.Int32)">
+            -------------------------------------------------------------------------------------------------
+             <summary>   Return a random int number. </summary>
+            
+             <remarks>   Jan Tamis, 29-8-2017. </remarks>
+            
+             <param name="min">  The lower bound (inclusive). </param>
+             <param name="max">  the upper bound (exclusive). </param>
+            
+             <returns>   System.Single. </returns>
+        </member>
+        <member name="M:CCreative.Math.randomInt(System.Int32)">
+            -------------------------------------------------------------------------------------------------
+             <summary>   Return a random int number. </summary>
+            
+             <remarks>   Jan Tamis, 29-8-2017. </remarks>
+            
+             <param name="value">  the upper bound (exclusive). </param>
+            
+             <returns>   System.Single. </returns>
+        </member>
+        <member name="M:CCreative.Math.randomByte">
+            -------------------------------------------------------------------------------------------------
+             <summary>   Return a random byte number. </summary>
+            
+             <remarks>   Jan Tamis, 29-8-2017. </remarks>
+            
+             <returns>   System.Single. </returns>
         </member>
         <member name="M:CCreative.Math.nextGaussian(System.Double,System.Double)">
             -------------------------------------------------------------------------------------------------
@@ -2363,6 +2391,114 @@
              <remarks>   Jan Tamis, 29-8-2017. </remarks>
             
              <returns>   This object as a Vector. </returns>
+        </member>
+        <member name="T:CCreative.VertexFormat">
+            <summary>
+            The type of vertex to use in buffer aswell as their value in bytes
+            </summary>
+        </member>
+        <member name="M:CCreative.VertexBuffer.Load">
+            <summary>
+            Load vertex buffer
+            :: store in memory
+            </summary>
+        </member>
+        <member name="M:CCreative.VertexBuffer.Reload">
+            <summary>
+            Reload the buffer data without destroying the buffers pointer to OpenGL
+            </summary>
+        </member>
+        <member name="M:CCreative.VertexBuffer.Unload">
+            <summary>
+            Unload vertex buffer from OpenGL
+            :: release memory
+            </summary>
+        </member>
+        <member name="M:CCreative.VertexBuffer.IndexFromLength(System.Boolean)">
+            <summary>
+            Add indices in order of vertices length,
+            this is if you dont want to set indices and just index from vertex-index
+            </summary>
+        </member>
+        <member name="M:CCreative.VertexBuffer.AddVertex(System.Single,System.Single)">
+            <summary>
+            XY
+            </summary>
+            <param name="x"></param>
+            <param name="y"></param>
+        </member>
+        <member name="M:CCreative.VertexBuffer.AddVertex(System.Single,System.Single,System.UInt32)">
+            <summary>
+            XY_COLOR
+            </summary>
+            <param name="x"></param>
+            <param name="y"></param>
+            <param name="color"></param>
+        </member>
+        <member name="M:CCreative.VertexBuffer.AddVertex(System.Single,System.Single,System.Single)">
+            <summary>
+            XYZ
+            </summary>
+            <param name="x"></param>
+            <param name="y"></param>
+            <param name="z"></param>
+        </member>
+        <member name="M:CCreative.VertexBuffer.AddVertex(System.Single,System.Single,System.Single,System.UInt32)">
+            <summary>
+            XYZ_COLOR
+            </summary>
+            <param name="x"></param>
+            <param name="y"></param>
+            <param name="z"></param>
+            <param name="color"></param>
+        </member>
+        <member name="M:CCreative.VertexBuffer.AddVertex(System.Single,System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+            XYZ_UV
+            </summary>
+            <param name="x"></param>
+            <param name="y"></param>
+            <param name="z"></param>
+            <param name="u"></param>
+            <param name="v"></param>
+        </member>
+        <member name="M:CCreative.VertexBuffer.AddVertex(System.Single,System.Single,System.Single,System.Single,System.Single,System.UInt32)">
+            <summary>
+            XYZ_UV_COLOR
+            </summary>
+            <param name="x"></param>
+            <param name="y"></param>
+            <param name="z"></param>
+            <param name="u"></param>
+            <param name="v"></param>
+            <param name="color"></param>
+        </member>
+        <member name="M:CCreative.VertexBuffer.AddVertex(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+            XYZ_NORMAL_UV
+            </summary>
+            <param name="x"></param>
+            <param name="y"></param>
+            <param name="z"></param>
+            <param name="nx"></param>
+            <param name="ny"></param>
+            <param name="nz"></param>
+            <param name="u"></param>
+            <param name="v"></param>
+        </member>
+        <member name="M:CCreative.VertexBuffer.AddVertex(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.UInt32)">
+            <summary>
+            XYZ_NORMAL_UV_COLOR
+            </summary>
+            <param name="x"></param>
+            <param name="y"></param>
+            <param name="z"></param>
+            <param name="nx"></param>
+            <param name="ny"></param>
+            <param name="nz"></param>
+            <param name="u"></param>
+            <param name="v"></param>
+            <param name="color"></param>
         </member>
         <member name="T:CCreative.Properties.Resources">
             <summary>

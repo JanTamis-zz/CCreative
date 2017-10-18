@@ -5,27 +5,17 @@ D:\Users\Jan Tamis\Documents\Visual Studio 2017\Projects\CCreative\CCreative\obj
 D:\Users\Jan Tamis\Documents\Visual Studio 2017\Projects\CCreative\CCreative\obj\Release\CCreative.csproj.GenerateResource.Cache
 D:\Users\Jan Tamis\Documents\Visual Studio 2017\Projects\CCreative\CCreative\obj\Release\Ccreative.dll
 D:\Users\Jan Tamis\Documents\Visual Studio 2017\Projects\CCreative\CCreative\obj\Release\Ccreative.pdb
-E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative - Hardware Accelerated\CCreative\obj\Release\CCreative.Properties.Resources.resources
-E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative - Hardware Accelerated\CCreative\obj\Release\CCreative.csproj.GenerateResource.Cache
-E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative - Hardware Accelerated\CCreative\obj\Release\Ccreative.dll
-E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative - Hardware Accelerated\CCreative\obj\Release\Ccreative.pdb
-E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative - Hardware Accelerated\CCreative\bin\Release\Ccreative.dll.config
-E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative - Hardware Accelerated\CCreative\bin\Release\Ccreative.dll
-E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative - Hardware Accelerated\CCreative\bin\Release\Ccreative.pdb
+E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative - Hardware Accelerated\CCreative\bin\Release\CCreative.dll.config
+E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative - Hardware Accelerated\CCreative\bin\Release\CCreative.xml
+E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative - Hardware Accelerated\CCreative\bin\Release\CCreative.dll
+E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative - Hardware Accelerated\CCreative\bin\Release\CCreative.pdb
 E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative - Hardware Accelerated\CCreative\bin\Release\OpenTK.dll
 E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative - Hardware Accelerated\CCreative\bin\Release\OpenTK.xml
-E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative - Hardware Accelerated\CCreative\bin\Release\Ccreative.xml
-E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative - Hardware Accelerated\CCreative\obj\Release\CCreative.csprojResolveAssemblyReference.cache
+E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative - Hardware Accelerated\CCreative\obj\Release\CCreative.Properties.Resources.resources
+E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative - Hardware Accelerated\CCreative\obj\Release\CCreative.csproj.GenerateResource.Cache
 E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative - Hardware Accelerated\CCreative\obj\Release\CCreative.csproj.CoreCompileInputs.cache
-E:\Users\JanTamis\Documents\GitHub\CCreative\CCreative\CCreative\bin\Release\CCreative.dll.config
-E:\Users\JanTamis\Documents\GitHub\CCreative\CCreative\CCreative\bin\Release\CCreative.xml
-E:\Users\JanTamis\Documents\GitHub\CCreative\CCreative\CCreative\bin\Release\CCreative.dll
-E:\Users\JanTamis\Documents\GitHub\CCreative\CCreative\CCreative\bin\Release\CCreative.pdb
-E:\Users\JanTamis\Documents\GitHub\CCreative\CCreative\CCreative\bin\Release\OpenTK.dll
-E:\Users\JanTamis\Documents\GitHub\CCreative\CCreative\CCreative\bin\Release\OpenTK.xml
-E:\Users\JanTamis\Documents\GitHub\CCreative\CCreative\CCreative\obj\Release\CCreative.csprojResolveAssemblyReference.cache
-E:\Users\JanTamis\Documents\GitHub\CCreative\CCreative\CCreative\obj\Release\CCreative.Properties.Resources.resources
-E:\Users\JanTamis\Documents\GitHub\CCreative\CCreative\CCreative\obj\Release\CCreative.csproj.GenerateResource.Cache
-E:\Users\JanTamis\Documents\GitHub\CCreative\CCreative\CCreative\obj\Release\CCreative.csproj.CoreCompileInputs.cache
-E:\Users\JanTamis\Documents\GitHub\CCreative\CCreative\CCreative\obj\Release\CCreative.dll
-E:\Users\JanTamis\Documents\GitHub\CCreative\CCreative\CCreative\obj\Release\CCreative.pdb
+E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative - Hardware Accelerated\CCreative\obj\Release\CCreative.dll
+E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative - Hardware Accelerated\CCreative\obj\Release\CCreative.pdb
+E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative - Hardware Accelerated\CCreative\obj\Release\CCreative.csprojResolveAssemblyReference.cache
+E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative - Hardware Accelerated\CCreative\bin\Release\Box2DX.dll
+E:\Users\JanTamis\Documents\Visual Studio 2017\Projects\CCreative - Hardware Accelerated\CCreative\bin\Release\Box2DX.pdb

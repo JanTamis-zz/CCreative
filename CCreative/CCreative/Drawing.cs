@@ -1,26 +1,41 @@
-﻿using System.Drawing.Imaging;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static CCreative.Colors;
-using static CCreative.Data;
 using static CCreative.General;
 using static CCreative.Math;
-using static CCreative.Drawing;
-using System.Windows.Forms;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using CCreative.FastBitmapLib;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
-using System.IO;
 
 namespace CCreative
 {
     public static class Drawing
     {
+        struct Style
+        {
+            public float strokeWidth { get; set; }
+            public Color strokeColor { get; set; }
+            public Color fillColor { get; set; }
+            public Color tintColor { get; set; }
+
+            public drawModes rectangleMode { get; set; }
+            public drawModes cirlceMode { get; set; }
+            public angleModes angleMode { get; set; }
+
+            public Style(float strokeweight, Color strokecolor, Color fillcolor, Color tintcolor, drawModes rectmode, drawModes ellipsemode, angleModes anglemode) : this()
+            {
+                strokeWidth = strokeweight;
+                strokeColor = strokecolor;
+                fillColor = fillcolor;
+                tintColor = tintcolor;
+                RectangleMode = rectmode;
+                CircleMode = ellipsemode;
+                angleMode = anglemode;
+            }
+        }
+
         [DllImport("shlwapi.dll")]
         static extern int ColorHLSToRGB(int H, int L, int S);
         
@@ -29,27 +44,32 @@ namespace CCreative
 
         static List<Vector2> points = new List<Vector2>();
 
-        static Bitmap image;
+        static List<Vector2> vertbuffer = new List<Vector2>();
+
+        static VertexBuffer buffer = new VertexBuffer(VertexFormat.XY_COLOR);
+
+        //static Bitmap image;
         static FastBitmap bitmap;
 
-        static int VBO = GL.GenBuffer();
-        static int textureBuffer = GL.GenTexture();
+        public static int VBO = GL.GenBuffer();
+        public static int textureBuffer = GL.GenTexture();
 
-        public static BufferedGraphicsContext currentContext;
-        public static BufferedGraphics myBuffer;
+        static Color tintColor = Color.White;
 
         static drawModes CircleMode = drawModes.Center;
         static drawModes RectangleMode = drawModes.Corner;
         static bool Smooth = true;
         static bool center = true;
 
-        static Color fillColor;
-        static Color strokeColor;
-        static float strokeWidth;
         static float size = 12;
 
         static PrimitiveType drawtype;
-        static angleModes Anglemode = angleModes.Radians;
+
+        public static FastBitmap img;
+
+        static Stack<Style> styleStack = new Stack<Style>();
+
+        static Style currentStyle = new Style(1, Color.Transparent, Color.White, Color.White, drawModes.Corner, drawModes.Center, angleModes.Radians);
 
 
         ///-------------------------------------------------------------------------------------------------
@@ -59,8 +79,7 @@ namespace CCreative
         {
             Center,
             Radius,
-            Corner,
-            Corners
+            Corner
         }
 
         ///-------------------------------------------------------------------------------------------------
@@ -81,7 +100,17 @@ namespace CCreative
         /// 
         public static void angleMode(angleModes modes)
         {
-            Anglemode = modes;
+            currentStyle.angleMode = modes;
+        }
+
+        public static void pushStyle()
+        {
+            styleStack.Push(currentStyle);
+        }
+
+        public static void popstyle()
+        {
+            currentStyle = styleStack.Pop();
         }
 
         ///-------------------------------------------------------------------------------------------------
@@ -89,7 +118,7 @@ namespace CCreative
         ///
         public static angleModes angleMode()
         {
-            return Anglemode;
+            return currentStyle.angleMode;
         }
 
         ///-------------------------------------------------------------------------------------------------
@@ -125,7 +154,7 @@ namespace CCreative
 
         public static Color fill(Color DrawColor)
         {
-            fillColor = DrawColor;
+            currentStyle.fillColor = DrawColor;
             return DrawColor;
         }
 
@@ -140,10 +169,8 @@ namespace CCreative
         public static Color background(Color backcolor)
         {
             GL.ClearColor(backcolor);
-
             GL.Clear(ClearBufferMask.ColorBufferBit);
-
-
+            
             backgroundColor = backcolor;
             return backcolor;
         }
@@ -197,13 +224,13 @@ namespace CCreative
         {
             if (colorMode() == colorModes.HSB)
             {
-                fillColor = hueToColor(value);
+                currentStyle.fillColor = hueToColor(value);
             }
             else if (colorMode() == colorModes.RGB)
             {
-                fillColor = Color.FromArgb(255, value, value, value);
+                currentStyle.fillColor = Color.FromArgb(255, value, value, value);
             }
-            return fillColor;
+            return currentStyle.fillColor;
         }
 
         ///-------------------------------------------------------------------------------------------------
@@ -220,13 +247,13 @@ namespace CCreative
         {
             if (colorMode() == colorModes.HSB)
             {
-                fillColor = hueToColor(value);
+                currentStyle.fillColor = hueToColor(value);
             }
             else if (colorMode() == colorModes.RGB)
             {
-                fillColor = Color.FromArgb(transparancy, value, value, value);
+                currentStyle.fillColor = Color.FromArgb(transparancy, value, value, value);
             }
-            return fillColor;
+            return currentStyle.fillColor;
         }
 
         private static Color hueToColor(int hue)
@@ -242,7 +269,7 @@ namespace CCreative
 
         public static void noFill()
         {
-            fillColor = Color.Transparent;
+            currentStyle.fillColor = Color.Transparent;
         }
 
         ///-------------------------------------------------------------------------------------------------
@@ -256,7 +283,7 @@ namespace CCreative
 
         public static Color stroke(Color DrawColor)
         {
-            strokeColor = DrawColor;
+            currentStyle.strokeColor = DrawColor;
             return DrawColor;
         }
 
@@ -276,13 +303,13 @@ namespace CCreative
             {
                 value = (int)constrain(value, 0, 360);
                 int Hue = (int)map(value, 0, 360, 0, 240);
-                strokeColor = ColorTranslator.FromWin32(ColorHLSToRGB(Hue, 120, 240));
+                currentStyle.strokeColor = ColorTranslator.FromWin32(ColorHLSToRGB(Hue, 120, 240));
             }
             else if (colorMode() == colorModes.RGB)
             {
-                strokeColor = Color.FromArgb(value, value, value);
+                currentStyle.strokeColor = Color.FromArgb(value, value, value);
             }
-            return strokeColor;
+            return currentStyle.strokeColor;
         }
 
         ///-------------------------------------------------------------------------------------------------
@@ -296,8 +323,8 @@ namespace CCreative
 
         public static float strokeWeight(double weight)
         {
-            strokeWidth = (float)weight;
-            return strokeWidth;
+            currentStyle.strokeWidth = (float)weight;
+            return currentStyle.strokeWidth;
         }
 
         ///-------------------------------------------------------------------------------------------------
@@ -307,7 +334,7 @@ namespace CCreative
 
         public static void noStroke()
         {
-            strokeColor = Color.Transparent;
+            currentStyle.strokeColor = Color.Transparent;
         }
 
         ///-------------------------------------------------------------------------------------------------
@@ -367,33 +394,63 @@ namespace CCreative
 
         public static void ellipse(double x, double y, double w, double h)
         {
-            Vector2[] vertbuffer = new Vector2[360];
+            // http://slabode.exofire.net/circle_draw.shtml
+
+            int num_segments = 0;
+
+            double r = ((w / h) * 2);
+            num_segments = ceil(1.275 * sqrt((w * h) / 2));
+
+            Vector2[] vertbuffer = new Vector2[num_segments]; 
 
             Vector2 vector = new Vector2(0, 0);
-
-            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
-
-            if (fillColor.A > 0 || strokeColor.A > 0)
+            if (CircleMode == drawModes.Center)
             {
-                for (int i = 0; i < 360; i++)
-                {
-                    vector.X = (float)(x + cos(radians(i)) * w);
-                    vector.Y = (float)(y + sin(radians(i)) * h);
-                    vertbuffer[i] = vector;
-                }
-                GL.BufferData(BufferTarget.ArrayBuffer, Vector2.SizeInBytes * vertbuffer.Length, vertbuffer.ToArray(), BufferUsageHint.StaticDraw);
+                w /= 2;
+                h /= 2;
             }
 
-            if (fillColor.A > 0)
+            if (currentStyle.fillColor.A > 0 || currentStyle.strokeColor.A > 0)
             {
-                GL.Color4(fillColor);
+                float theta = TWO_PI / (num_segments);
+
+                float tangetial_factor = tan(theta);
+                float radial_factor = cos(theta);
+
+                double X = w * cos(0);//we now start at the start angle
+                double Y = h * sin(0);
+
+
+                for (int i = 0; i < num_segments; i++)
+                {
+                    vector.X = (float)(X + x);
+                    vector.Y = (float)(Y + y);
+
+                    double tx = -Y;
+                    double ty = X;
+
+                    X += tx * tangetial_factor;
+                    Y += ty * tangetial_factor;
+
+                    X *= radial_factor;
+                    Y *= radial_factor;
+                    
+                    vertbuffer[i] = vector;
+                }
+                
+                GL.BufferData(BufferTarget.ArrayBuffer, Vector2.SizeInBytes * vertbuffer.Length, vertbuffer.ToArray(), BufferUsageHint.DynamicDraw);
+            }
+
+            if (currentStyle.fillColor.A > 0)
+            {
+                GL.Color4(currentStyle.fillColor);
                 GL.DrawArrays(PrimitiveType.Polygon, 0, vertbuffer.Length);
             }
 
-            if (strokeColor.A > 0)
+            if (currentStyle.strokeColor.A > 0)
             {
-                GL.LineWidth(strokeWidth);
-                GL.Color4(strokeColor);
+                GL.LineWidth(currentStyle.strokeWidth);
+                GL.Color4(currentStyle.strokeColor);
                 GL.DrawArrays(PrimitiveType.LineLoop, 0, vertbuffer.Length);
             }
         }
@@ -507,20 +564,23 @@ namespace CCreative
 
         public static void line(double x1, double y1, double x2, double y2)
         {
-            if (strokeColor.A > 0)
+            if (currentStyle.strokeColor.A > 0)
             {
-                Vector2[] vertbuffer = new Vector2[2];
+                GL.Begin(PrimitiveType.Lines);
 
-                vertbuffer[0] = new Vector2((float)x1, (float)y1);
-                vertbuffer[1] = new Vector2((float)x2, (float)y2);
+                GL.Color3(currentStyle.strokeColor);
+                GL.LineWidth(currentStyle.strokeWidth);
 
-                GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
-                GL.BufferData(BufferTarget.ArrayBuffer, Vector2.SizeInBytes * vertbuffer.Length, vertbuffer.ToArray(), BufferUsageHint.StaticDraw);
+                GL.Vertex2(x1, y1);
+                GL.Vertex2(x2, y2);
 
-                GL.LineWidth(strokeWidth);
-                GL.Color3(strokeColor);
-                GL.DrawArrays(PrimitiveType.LineLoop, 0, vertbuffer.Length);
+                GL.End();
             }
+            //noStroke();
+            //stroke(Color.Transparent);
+            //ellipse(x1, y1, strokeWidth / 3);
+            //ellipse(x2, y2, strokeWidth / 3);
+            //point(x1, y1);
         }
 
         ///-------------------------------------------------------------------------------------------------
@@ -535,29 +595,60 @@ namespace CCreative
 
         public static void point(double x, double y)
         {
-            if (strokeColor.A > 0)
+            if (currentStyle.strokeColor.A > 0)
             {
-                int totalVertecies = 5;
-
-                double angle = 360 / totalVertecies;
-                    
-                Vector2[] vertbuffer = new Vector2[totalVertecies];
-
-                Vector2 vector = new Vector2(0, 0);
-
-                GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
-
-                for (double i = 0; i < totalVertecies; i++)
+                if (currentStyle.strokeWidth > 3)
                 {
-                    vector.X = (float)(x + cos(radians(i * angle)) * strokeWidth);
-                    vector.Y = (float)(y + sin(radians(i * angle)) * strokeWidth);
-                    vertbuffer[floor(i)] = vector;
+                    int num_segments = 0;
+
+                    num_segments = ceil(5 * sqrt(currentStyle.strokeWidth / 2));
+
+                    Vector2[] vertbuffer = new Vector2[num_segments];
+
+                    Vector2 vector = new Vector2(0, 0);
+
+                    float theta = TWO_PI / (num_segments);
+
+                    float tangetial_factor = tan(theta);
+                    float radial_factor = cos(theta);
+
+                    double X = (currentStyle.strokeWidth / 2) * cos(0);//we now start at the start angle
+                    double Y = (currentStyle.strokeWidth / 2) * sin(0);
+
+
+                    for (int i = 0; i < num_segments; i++)
+                    {
+                        vector.X = (float)(X + x);
+                        vector.Y = (float)(Y + y);
+
+                        double tx = -Y;
+                        double ty = X;
+
+                        X += tx * tangetial_factor;
+                        Y += ty * tangetial_factor;
+
+                        X *= radial_factor;
+                        Y *= radial_factor;
+
+                        vertbuffer[i] = vector;
+                    }
+
+                    GL.BufferData(BufferTarget.ArrayBuffer, Vector2.SizeInBytes * vertbuffer.Length, vertbuffer.ToArray(), BufferUsageHint.DynamicDraw);
+                    GL.Color4(currentStyle.strokeColor);
+                    GL.DrawArrays(PrimitiveType.Polygon, 0, vertbuffer.Length);
+
                 }
+                else
+                {
+                    GL.PointSize(currentStyle.strokeWidth);
 
-                GL.Color4(strokeColor);
+                    GL.Begin(PrimitiveType.Points);
+                    
+                    GL.Color4(currentStyle.strokeColor);
+                    GL.Vertex2(x, y);
 
-                GL.BufferData(BufferTarget.ArrayBuffer, Vector2.SizeInBytes * vertbuffer.Length, vertbuffer.ToArray(), BufferUsageHint.StaticDraw);
-                GL.DrawArrays(PrimitiveType.Polygon, 0, vertbuffer.Length);
+                    GL.End();
+                }
             }
         }
 
@@ -719,32 +810,39 @@ namespace CCreative
 
         public static void quad(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4)
         {
-            Vector2[] vertbuffer = new Vector2[4]
-                {
-                    new Vector2((float)x1, (float)y1),
-                    new Vector2((float)x2, (float)y2),
-                    new Vector2((float)x3, (float)y3),
-                    new Vector2((float)x4, (float)y4),
-                };
-
-            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
-
-            if (fillColor.A > 0 || strokeColor.A > 0)
+            if (currentStyle.fillColor.A > 0)
             {
-                GL.BufferData(BufferTarget.ArrayBuffer, Vector2.SizeInBytes * vertbuffer.Length, vertbuffer.ToArray(), BufferUsageHint.StaticDraw);
+                //GL.Color4(currentStyle.fillColor);
+                //GL.DrawArrays(PrimitiveType.Quads, 0, vertbuffer.Length);
+
+                GL.Begin(PrimitiveType.Quads);
+
+                GL.Color4(currentStyle.fillColor);
+                GL.Vertex2(x1, y1);
+                GL.Vertex2(x2, y2);
+                GL.Vertex2(x3, y3);
+                GL.Vertex2(x4, y4);
+
+                GL.End();
             }
 
-            if (fillColor.A > 0)
+            if (currentStyle.strokeColor.A > 0)
             {
-                GL.Color4(fillColor);
-                GL.DrawArrays(PrimitiveType.Quads, 0, vertbuffer.Length);
-            }
+                //GL.LineWidth(strokeWidth);
+                //GL.Color4(currentStyle.strokeColor);
+                //GL.DrawArrays(PrimitiveType.LineLoop, 0, vertbuffer.Length);
 
-            if (strokeColor.A > 0)
-            {
-                GL.LineWidth(strokeWidth);
-                GL.Color4(strokeColor);
-                GL.DrawArrays(PrimitiveType.LineLoop, 0, vertbuffer.Length);
+                GL.Begin(PrimitiveType.LineLoop);
+
+                GL.Color4(currentStyle.strokeColor);
+                GL.LineWidth(currentStyle.strokeWidth);
+
+                GL.Vertex2(x1, y1);
+                GL.Vertex2(x2, y2);
+                GL.Vertex2(x3, y3);
+                GL.Vertex2(x4, y4);
+
+                GL.End();
             }
         }
 
@@ -787,40 +885,40 @@ namespace CCreative
         ///
         /// <remarks>   Jan Tamis, 27-8-2017. </remarks>
 
-        public static void drawFramerate()
-        {
-            //if (BrushColor != Color.Transparent)
-            //{
-            //    bool center = CenterText();
+        //public static void drawFramerate()
+        //{
+        //    //if (BrushColor != Color.Transparent)
+        //    //{
+        //    //    bool center = CenterText();
 
-            //    CenterText(false);
+        //    //    CenterText(false);
 
-            //    Text("FPS: " + frameRate(), new Point(0, 0));
-            //    CenterText(center); 
-            //}
+        //    //    Text("FPS: " + frameRate(), new Point(0, 0));
+        //    //    CenterText(center); 
+        //    //}
 
-            window.Title = "CCreative | " + window.RenderFrequency.ToString("n") + " FPS";
-        }
+        //    window.Title = "CCreative | " + window.RenderFrequency.ToString("n") + " FPS";
+        //}
 
         ///-------------------------------------------------------------------------------------------------
         /// <summary>   Shows the total time that the program is running into the status bar </summary>
         ///
         /// <remarks>   Jan Tamis, 27-8-2017. </remarks>
 
-        public static void drawTotalTime()
-        {
-            window.Title = "CCreative | TotalTime: " + totalTime.Seconds;
-        }
+        //public static void drawTotalTime()
+        //{
+        //    window.Title = "CCreative | TotalTime: " + totalTime.Seconds;
+        //}
 
         ///-------------------------------------------------------------------------------------------------
         /// <summary>   Shows the average framerate into the status bar </summary>
         ///
         /// <remarks>   Jan Tamis, 27-8-2017. </remarks>
 
-        public static void drawAverageFramerate()
-        {
-            window.Title = "CCreative | average: " + averageFramerate().ToString("n") + " FPS";
-        }
+        //public static void drawAverageFramerate()
+        //{
+        //    window.Title = "CCreative | Average: " + averageFramerate().ToString("n") + " FPS";
+        //}
 
         ///-------------------------------------------------------------------------------------------------
         /// <summary>   Sets the fontsize for the Text() method. </summary>
@@ -848,8 +946,8 @@ namespace CCreative
 
         public static float rotate(double angle)
         {
-            if (Anglemode == angleModes.Radians)
-                GL.Rotate(radians(angle), 0, 0, 1);
+            if (currentStyle.angleMode == angleModes.Radians)
+                GL.Rotate((angle * PI / 180), 0, 0, 1);
             else
                 GL.Rotate(angle, 0, 0, 1);
 
@@ -905,6 +1003,7 @@ namespace CCreative
         public static void vertex(double x, double y)
         {
             points.Add(new Vector2((float)x, (float)y));
+            //GL.Vertex2()
         }
 
         ///-------------------------------------------------------------------------------------------------
@@ -955,30 +1054,30 @@ namespace CCreative
         {
             GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
 
-            if (fillColor.A > 0 || strokeColor.A > 0)
+            if (currentStyle.fillColor.A > 0 || currentStyle.strokeColor.A > 0)
             {
-                GL.BufferData(BufferTarget.ArrayBuffer, Vector2.SizeInBytes * points.Count, points.ToArray(), BufferUsageHint.StaticDraw);
+                GL.BufferData(BufferTarget.ArrayBuffer, Vector2.SizeInBytes * points.Count, points.ToArray(), BufferUsageHint.DynamicDraw);
             }
 
-            if (fillColor.A > 0)
+            if (currentStyle.fillColor.A > 0)
             {
-                GL.Color3(fillColor);
+                GL.Color3(currentStyle.fillColor);
                 GL.DrawArrays(PrimitiveType.Polygon, 0, points.Count);
             }
 
-            if (strokeColor.A > 0)
+            if (currentStyle.strokeColor.A > 0)
             {
                 if (Connect)
                 {
-                    GL.LineWidth(strokeWidth);
-                    GL.Color3(strokeColor);
+                    GL.LineWidth(currentStyle.strokeWidth);
+                    GL.Color3(currentStyle.strokeColor);
 
                     GL.DrawArrays(PrimitiveType.LineLoop, 0, points.Count);
                 }
                 else
                 {
-                    GL.LineWidth(strokeWidth);
-                    GL.Color3(strokeColor);
+                    GL.LineWidth(currentStyle.strokeWidth);
+                    GL.Color3(currentStyle.strokeColor);
 
                     GL.DrawArrays(PrimitiveType.LineStrip, 0, points.Count);
                 }
@@ -992,27 +1091,47 @@ namespace CCreative
 
         public static void loadPixels()
         {
-            Array.Clear(Pixels, 0, Pixels.Length);
+            //    if (!buffer.IsLoaded)
+            //    {
+            //        buffer.Load();
+            //    }
+            //    buffer.Clear();
+            //}
+            img.Clear(Color.Transparent);
+
+            img.Lock();
         }
 
-        ///-------------------------------------------------------------------------------------------------
-        /// <summary>   Changes the color of any pixel, or writes an image directly to the display window. </summary>
-        ///
-        /// <remarks>   Jan Tamis, 27-8-2017. </remarks>
-        ///
-        /// <param name="x">        x-coordinate of the pixel. </param>
-        /// <param name="y">        y-coordinate of the pixel. </param>
-        /// <param name="color">    The color to fill the pixel. </param>
+            ///-------------------------------------------------------------------------------------------------
+            /// <summary>   Changes the color of any pixel, or writes an image directly to the display window. </summary>
+            ///
+            /// <remarks>   Jan Tamis, 27-8-2017. </remarks>
+            ///
+            /// <param name="x">        x-coordinate of the pixel. </param>
+            /// <param name="y">        y-coordinate of the pixel. </param>
+            /// <param name="color">    The color to fill the pixel. </param>
 
         public static void set(int x, int y, Color color)
         {
-            x = (int)constrain(x, 0, width);
-            y = (int)constrain(y, 0, height);
+            //if (!img.Locked)
+            //{
+            //    img.Lock();
+            //}
 
-            Pixels[x * width + y] = color;
+            img.SetPixel(x, y, color);
+
+            //pixels[y * width + x] = color;
+            //buffer.AddVertex(x, y, 0xffffff);//ColorToUInt(color));
         }
 
-        public static Color[] Pixels { get; set; }
+        private static uint ColorToUInt(Color c)
+        {
+            return (uint)(((c.A << 24) | (c.R << 16) | (c.G << 8) | c.B) & 0xffffffffL);
+
+        }
+
+
+        public static Color[] pixels { get; set; }
 
         ///-------------------------------------------------------------------------------------------------
         /// <summary>   Updates the display window with the data in the pixels[] array. </summary>
@@ -1021,49 +1140,27 @@ namespace CCreative
 
         public static void updatePixels()
         {
-            //int[] vboID = new int[2];
-
-            //List<Vector2> vertbuffer = new List<Vector2>();
-            //List<Color> colbuffer = new List<Color>();
-
-            //Vector2 vector = new Vector2();
-
-            //for (int x = 0; x < bitmap.Width; x++)
+            //GL.Begin(PrimitiveType.Points);
+            //for (int i = 0; i < width; i++)
             //{
-            //    for (int y = 0; y < bitmap.Height; y++)
+            //    for (int j = 0; j < height; j++)
             //    {
-            //        vector.X = x;
-            //        vector.Y = y;
-            //        vertbuffer.Add(vector);
-
-            //        colbuffer.Add(bitmap.GetPixel(x, y));
+            //        if (pixels[j * width + i].A > 0)
+            //        {
+            //            GL.Color4(pixels[j * width + i]);
+            //            GL.Vertex2(i, j);
+            //        }
             //    }
             //}
-
-            //GL.GenBuffers(2, vboID);
-
-            //GL.BindBuffer(BufferTarget.ArrayBuffer, vboID[1]);
-            //GL.BufferData(BufferTarget.ArrayBuffer, colbuffer.Count * , )
-
-            bitmap.Unlock();
+            //GL.End();
+            //GL.DrawPixels<byte>(width, height, OpenTK.Graphics.OpenGL.PixelFormat., PixelType.Byte, pixels);
+            //buffer.Bind();
 
             GL.BindTexture(TextureTarget.Texture2D, textureBuffer);
 
-            BitmapData data = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, img.Width, img.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, img.Scan0);
 
-            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, data.Width, data.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
-            image.UnlockBits(data);
-
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Clamp);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Clamp);
-
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
-
-            GL.BindTexture(TextureTarget.Texture2D, loadTexture(image));
-            
             GL.Begin(PrimitiveType.Quads);
-            GL.Color3(1, 1, 1);
 
             GL.TexCoord2(0, 0);
             GL.Vertex2(0, 0);
@@ -1078,34 +1175,174 @@ namespace CCreative
             GL.Vertex2(0, height);
 
             GL.End();
-
-            //GL.DrawPixels(width, height, OpenTK.Graphics.OpenGL.PixelFormat.Rgba, PixelType.UnsignedByte, )
+            img.Unlock();
         }
 
-        private static int loadTexture(Bitmap bmp)
+        /// <summary>
+        /// Images the specified image.
+        /// </summary>
+        /// <param name="Image">The image.</param>
+        /// <param name="x">The x.</param>
+        /// <param name="y">The y.</param>
+        /// <param name="width">The width.</param>
+        /// <param name="height">The height.</param>
+
+        public static void image(PImage Image, double x, double y, double width, double height)
         {
-            int id = GL.GenTexture();
+            GL.BindTexture(TextureTarget.Texture2D, (int)Image.textureID);
+            
+            GL.Begin(PrimitiveType.Quads);
+            GL.Color4(tintColor);
 
-            GL.BindTexture(TextureTarget.Texture2D, id);
+            switch (RectangleMode)
+            {
+                case drawModes.Center:
 
-            BitmapData data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                    GL.TexCoord2(0, 0);
+                    GL.Vertex2(x - width / 2, y - height / 2);
 
-            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, data.Width, data.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
-            bmp.UnlockBits(data);
+                    GL.TexCoord2(1, 0);
+                    GL.Vertex2(x + width / 2, y - height / 2);
 
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Clamp);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Clamp);
+                    GL.TexCoord2(1, 1);
+                    GL.Vertex2(x + width / 2, y + height / 2);
 
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+                    GL.TexCoord2(0, 1);
+                    GL.Vertex2(x - width / 2, y + height / 2);
 
-            return id;
+                    break;
+                case drawModes.Radius:
+
+                    GL.TexCoord2(0, 0);
+                    GL.Vertex2(x - width, y - width);
+
+                    GL.TexCoord2(1, 0);
+                    GL.Vertex2(x + width, y - width);
+
+                    GL.TexCoord2(1, 1);
+                    GL.Vertex2(x + width, y + height);
+
+                    GL.TexCoord2(0, 1);
+                    GL.Vertex2(x - width, y + height);
+
+                    break;
+                case drawModes.Corner:
+
+                    GL.TexCoord2(0, 0);
+                    GL.Vertex2(x, y);
+
+                    GL.TexCoord2(1, 0);
+                    GL.Vertex2(x + Image.width, y);
+
+                    GL.TexCoord2(1, 1);
+                    GL.Vertex2(x + Image.width, y + Image.height);
+
+                    GL.TexCoord2(0, 1);
+                    GL.Vertex2(x, y + Image.height);
+
+                    break;
+                default:
+                    break;
+            }
+            
+            GL.End();
         }
 
-        private static byte[] ImageToByte(Image img)
+        /// <summary>
+        /// Draws a given image at the given point and the size of the image.
+        /// </summary>
+
+        /// <param name="Image">The image to draw.</param>
+        /// <param name="x">The x axis.</param>
+        /// <param name="y">The y axis.</param>
+
+        public static void image(PImage Image, double x, double y)
         {
-            ImageConverter converter = new ImageConverter();
-            return (byte[])converter.ConvertTo(img, typeof(byte[]));
+            image(Image, x, y, Image.width, Image.height);
+        }
+
+        /// <summary>
+        /// Draws a triangle form the given points.
+        /// </summary>
+
+        /// <param name="x1">The x1.</param>
+        /// <param name="y1">The y1.</param>
+        /// <param name="x2">The x2.</param>
+        /// <param name="y2">The y2.</param>
+        /// <param name="x3">The x3.</param>
+        /// <param name="y3">The y3.</param>
+
+        public static void triangle(double x1, double y1, double x2, double y2, double x3, double y3)
+        {
+            if (currentStyle.fillColor.A > 0)
+            {
+                GL.Begin(PrimitiveType.Triangles);
+
+                GL.Color4(currentStyle.fillColor);
+                GL.Vertex2(x1, y1);
+                GL.Vertex2(x2, y2);
+                GL.Vertex2(x3, y3);
+
+                GL.End();
+            }
+
+            if (currentStyle.strokeColor.A > 0)
+            {
+                GL.Begin(PrimitiveType.LineLoop);
+
+                GL.Color4(currentStyle.strokeColor);
+                GL.LineWidth(currentStyle.strokeWidth);
+
+                GL.Vertex2(x1, y1);
+                GL.Vertex2(x2, y2);
+                GL.Vertex2(x3, y3);
+
+                GL.End();
+            }
+        }
+
+        /// <summary>
+        /// Draws a triangle form the given points.
+        /// </summary>
+
+        /// <param name="point1">The point1.</param>
+        /// <param name="point2">The point2.</param>
+        /// <param name="point3">The point3.</param>
+
+        public static void triangle(PointF point1, PointF point2, PointF point3)
+        {
+            triangle(point1.X, point1.Y, point2.X, point2.Y, point3.X, point3.Y);
+        }
+
+        /// <summary>
+        /// Sets the tint color for the images.
+        /// </summary>
+
+        /// <param name="tintcolor">The tintcolor.</param>
+
+        public static void Tint(Color tintcolor)
+        {
+            tintColor = tintcolor;
+        }
+
+        /// <summary>
+        /// Returns the current tint color.
+        /// </summary>
+
+        /// <returns> the current tint color.</returns>
+
+        public static Color Tint()
+        {
+            return tintColor;
+        }
+
+        /// <summary>
+        /// Removes the tint
+        /// </summary>
+
+        public static void noTint()
+        {
+            tintColor = Color.White;
         }
     }
 }
